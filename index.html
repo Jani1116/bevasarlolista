@@ -7,88 +7,80 @@
     <style>
         :root { 
             --bg: #000000; 
-            --glass: rgba(18, 18, 18, 0.9);
-            --border: rgba(48, 209, 88, 0.3); /* Neon zöldes szegély */
             --accent: #30d158;
             --purple: #5e5ce6;
             --text: #ffffff; 
             --gray: #8e8e93; 
             --red: #ff453a;
-            --neon-shadow: 0 0 10px rgba(48, 209, 88, 0.2);
         }
         
-        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .container { max-width: 450px; margin: auto; background: var(--bg); padding: 25px; border-radius: 32px; min-height: 85vh; position: relative; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; overflow-x: hidden; }
+        .container { max-width: 450px; margin: auto; min-height: 95vh; display: flex; flex-direction: column; }
         
-        /* Neon stílusú gombok */
+        /* Kompakt Fejléc */
+        #user-info { font-size: 11px; color: var(--accent); text-align: right; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+        h1 { font-size: 24px; text-align: center; margin: 5px 0 15px 0; font-weight: 800; }
+        
         .main-btn { 
             width: 100%; background: transparent; color: var(--accent); 
-            border: 2px solid var(--accent); padding: 18px; border-radius: 20px; 
-            font-size: 16px; font-weight: 800; cursor: pointer; 
-            box-shadow: var(--neon-shadow); transition: 0.2s;
+            border: 1.5px solid var(--accent); padding: 14px; border-radius: 16px; 
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s;
         }
-        .main-btn:active { transform: scale(0.96); background: rgba(48, 209, 88, 0.1); }
 
-        /* Kategória fejlécek a listában */
         .category-header { 
-            font-size: 12px; color: var(--accent); font-weight: 800; 
-            text-transform: uppercase; letter-spacing: 2px;
-            margin: 20px 0 10px 10px; display: flex; align-items: center;
+            font-size: 11px; color: var(--accent); font-weight: 800; 
+            margin: 15px 0 8px 5px; display: flex; align-items: center; opacity: 0.8;
         }
-        .category-header::after { content: ''; flex: 1; height: 1px; background: var(--border); margin-left: 10px; }
+        .category-header::after { content: ''; flex: 1; height: 1px; background: rgba(48, 209, 88, 0.2); margin-left: 10px; }
 
         .list-item { 
-            background: rgba(255,255,255,0.05); padding: 16px; border-radius: 18px; 
-            margin-bottom: 8px; display: flex; align-items: center; 
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.07); padding: 12px; border-radius: 14px; 
+            margin-bottom: 6px; display: flex; align-items: center; 
         }
-        .list-item.checked { opacity: 0.3; filter: grayscale(1); border-color: transparent; }
+        .list-item.checked { opacity: 0.3; filter: grayscale(1); }
         
-        .checkbox { width: 26px; height: 26px; border: 2px solid var(--accent); border-radius: 8px; margin-right: 15px; display: flex; align-items: center; justify-content: center; }
+        .checkbox { width: 22px; height: 22px; border: 2px solid var(--accent); border-radius: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; }
         .checkbox.active::after { content: '✓'; color: var(--accent); font-weight: 900; }
 
-        /* Modálok és Gridek */
+        /* Modálok */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: #121212; padding: 25px; border-radius: 30px; width: 85%; border: 1px solid var(--border); text-align: center; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .modal-content { background: #121212; padding: 20px; border-radius: 24px; width: 88%; border: 1px solid rgba(48, 209, 88, 0.3); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
         .product-grid { grid-template-columns: 1fr 1fr 1fr; }
-        .item-card { background: #1a1a1a; padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; font-size: 11px; }
-        .item-card span { font-size: 24px; margin-bottom: 5px; }
+        .item-card { background: #1a1a1a; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; font-size: 10px; }
+        .item-card span { font-size: 22px; margin-bottom: 4px; }
 
-        input { width: 100%; background: #1a1a1a; border: 1px solid var(--border); padding: 15px; border-radius: 15px; color: #fff; text-align: center; margin-bottom: 10px; }
-        #loading-overlay { position: fixed; inset: 0; background: black; z-index: 3000; display: none; align-items: center; justify-content: center; font-weight: 800; color: var(--accent); }
-        .hidden { display: none; }
+        input { width: 100%; background: #1a1a1a; border: 1px solid var(--accent); padding: 12px; border-radius: 12px; color: #fff; text-align: center; margin-bottom: 10px; box-sizing: border-box; }
+        #loading-overlay { position: fixed; inset: 0; background: black; z-index: 3000; display: none; align-items: center; justify-content: center; color: var(--accent); }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay">FRISSÍTÉS...</div>
+<div id="loading-overlay">TÖLTÉS...</div>
 
-<div id="login-screen">
-    <div class="container" style="display: flex; flex-direction: column; justify-content: center;">
-        <h1 style="color: var(--accent); text-shadow: var(--neon-shadow);">Elite Kosár</h1>
-        <input type="text" id="login-user" placeholder="Név">
-        <input type="password" id="login-pass" placeholder="Jelszó">
-        <button class="main-btn" onclick="handleLogin()">BELÉPÉS</button>
-    </div>
+<div id="login-screen" class="container" style="justify-content: center;">
+    <h1 style="color: var(--accent);">Elite Kosár</h1>
+    <input type="text" id="login-user" placeholder="Név">
+    <input type="password" id="login-pass" placeholder="Jelszó">
+    <button class="main-btn" onclick="handleLogin()">BELÉPÉS</button>
 </div>
 
-<div id="app-content" class="container hidden">
-    <div id="user-info" style="color: var(--accent); font-size: 10px; text-align: center; letter-spacing: 3px;"></div>
-    <h1 style="margin-bottom: 10px;">Lista</h1>
+<div id="app-content" class="container" style="display:none;">
+    <div id="user-info"></div>
+    <h1>Bevásárlólista</h1>
     
     <div id="shopping-list"></div>
     
-    <div style="height: 120px;"></div>
-    <div style="position: sticky; bottom: 0; background: var(--bg); padding: 15px 0;">
+    <div style="height: 100px;"></div>
+    <div style="position: sticky; bottom: 0; background: var(--bg); padding: 10px 0;">
         <button class="main-btn" onclick="openModal('cat-modal')">➕ ÚJ TÉTEL</button>
-        <button id="admin-btn" style="display:none; background:none; border:none; color:var(--purple); width:100%; margin-top:10px;" onclick="openModal('admin-modal')">Adminisztráció</button>
-        <button onclick="logout()" style="background:none; border:none; color:var(--red); width:100%; margin-top:10px; font-size:11px;">Kijelentkezés</button>
+        <button onclick="logout()" style="background:none; border:none; color:var(--red); width:100%; margin-top:10px; font-size:10px; opacity: 0.6;">Kijelentkezés</button>
     </div>
 </div>
 
 <div id="cat-modal" class="modal"><div class="modal-content">
-    <h2 style="color:var(--accent)">Kategóriák</h2>
+    <h2 style="text-align:center; font-size:18px;">Kategóriák</h2>
     <div class="grid">
         <div class="item-card" onclick="showProducts('Gyümölcs')"><span>🍎</span>Gyümölcs</div>
         <div class="item-card" onclick="showProducts('Zöldség')"><span>🥦</span>Zöldség</div>
@@ -97,18 +89,17 @@
         <div class="item-card" onclick="showProducts('Felvágott')"><span>🍱</span>Felvágott</div>
         <div class="item-card" onclick="showProducts('Egyéb')"><span>📦</span>Egyéb</div>
     </div>
-    <button onclick="closeModal('cat-modal')" style="color:var(--gray); background:none; border:none;">Bezárás</button>
+    <button class="main-btn" onclick="closeModal('cat-modal')" style="border:none; color:var(--gray)">Mégse</button>
 </div></div>
 
 <div id="product-modal" class="modal"><div class="modal-content">
-    <h2 id="cat-title" style="color:var(--accent)"></h2>
+    <h2 id="cat-title" style="text-align:center; font-size:18px;"></h2>
     <div id="product-grid" class="grid product-grid"></div>
-    <button onclick="openModal('cat-modal'); closeModal('product-modal')" style="color:var(--gray); background:none; border:none;">Vissza</button>
+    <button class="main-btn" onclick="goBackToCat()" style="border:none; color:var(--gray)">Vissza</button>
 </div></div>
 
 <div id="qty-modal" class="modal"><div class="modal-content">
-    <h2 id="selected-item-title" style="color:var(--accent)"></h2>
-    <div id="sub-type-area"></div>
+    <h2 id="selected-item-title" style="text-align:center;"></h2>
     <input type="number" id="qty-input" placeholder="Mennyiség" inputmode="numeric">
     <div class="grid">
         <button class="main-btn" onclick="saveFinal('db')">db</button>
@@ -116,35 +107,52 @@
     </div>
 </div></div>
 
-<div id="admin-modal" class="modal"><div class="modal-content">
-    <h3>Új felhasználó</h3>
-    <input type="text" id="new-user-name" placeholder="Név">
-    <input type="text" id="new-user-pass" placeholder="Jelszó">
-    <button class="main-btn" onclick="addUser()">Létrehozás</button>
-    <button onclick="closeModal('admin-modal')" style="color:var(--gray); background:none; border:none; margin-top:10px;">Bezárás</button>
-</div></div>
-
 <script>
     const DB_URL = "https://kiadaskoveto-2e474-default-rtdb.firebaseio.com/";
     let currentUser = JSON.parse(localStorage.getItem('kosar_v2_session'));
     let listItems = [];
-    let selectedProto = {};
-    let subType = "";
+    let activeModal = null;
 
     const library = {
         'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye']],
         'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka']],
         'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás']],
-        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🐔','Mell'],['🐔','Farhát'],['🐔','Csirkecomb']],
+        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🐔','Mell'],['🐔','Farhát'],['🐔','Comb']],
         'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🍱','Párizsi/Rúd']],
         'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','EGYÉB...']]
     };
 
-    // --- HAPTIC FEEDBACK (Note 20 rezgés) ---
-    function vibrate() {
-        if (navigator.vibrate) navigator.vibrate(35);
+    // --- VISSZA GOMB KEZELÉSE ---
+    window.addEventListener('popstate', function(event) {
+        if (activeModal) {
+            event.preventDefault();
+            closeAllModals();
+            history.pushState(null, null, window.location.pathname);
+        }
+    });
+
+    function openModal(id) {
+        document.getElementById(id).style.display = 'flex';
+        activeModal = id;
+        history.pushState(null, null, window.location.pathname);
     }
 
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+        activeModal = null;
+    }
+
+    function closeAllModals() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        activeModal = null;
+    }
+
+    function goBackToCat() {
+        closeModal('product-modal');
+        openModal('cat-modal');
+    }
+
+    // --- ALAP FUNKCIÓK ---
     async function handleLogin() {
         const u = document.getElementById('login-user').value.trim();
         const p = document.getElementById('login-pass').value.trim();
@@ -154,21 +162,19 @@
             const res = await fetch(`${DB_URL}shopping_users/${u}.json`);
             let stored = await res.json();
             if (stored && String(stored).replace(/"/g, '') === String(p)) {
-                currentUser = { name: u, isAdmin: (u.toLowerCase() === 'jani') };
+                currentUser = { name: u };
                 localStorage.setItem('kosar_v2_session', JSON.stringify(currentUser));
                 initApp();
-            } else { alert("Hibás adatok!"); }
+            } else { alert("Hibás!"); }
         } catch (e) { alert("Hiba!"); }
         showLoading(false);
     }
 
     function initApp() {
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-content').classList.remove('hidden');
-        document.getElementById('user-info').innerText = `ÜDVÖZÖLLEK, ${currentUser.name}`;
-        if(currentUser.isAdmin) document.getElementById('admin-btn').style.display = 'block';
+        document.getElementById('app-content').style.display = 'flex';
+        document.getElementById('user-info').innerText = currentUser.name;
         loadList();
-        setInterval(autoDelete, 60000);
     }
 
     async function loadList() {
@@ -181,17 +187,14 @@
     function render() {
         const c = document.getElementById('shopping-list');
         if (listItems.length === 0) {
-            c.innerHTML = '<p style="text-align:center; color:var(--gray); margin-top:50px;">Üres a listád.</p>';
+            c.innerHTML = '<p style="text-align:center; color:var(--gray); margin-top:30px;">Üres a lista.</p>';
             return;
         }
-
-        // --- INTELLIGENS CSOPORTOSÍTÁS ---
         const groups = {};
         listItems.forEach(item => {
             if (!groups[item.cat]) groups[item.cat] = [];
             groups[item.cat].push(item);
         });
-
         let html = '';
         for (const cat in groups) {
             html += `<div class="category-header">${cat}</div>`;
@@ -200,10 +203,10 @@
                 <div class="list-item ${i.checked ? 'checked' : ''}">
                     <div class="checkbox ${i.checked ? 'active' : ''}" onclick="toggleCheck('${i.fbKey}', ${i.checked})"></div>
                     <div style="flex:1" onclick="toggleCheck('${i.fbKey}', ${i.checked})">
-                        <div style="font-weight:700">${i.name} ${i.sub ? '<small>('+i.sub+')</small>' : ''}</div>
-                        <div style="font-size:12px; color:var(--gray)">${i.qty} ${i.unit}</div>
+                        <div style="font-weight:700; font-size:14px;">${i.name}</div>
+                        <div style="font-size:11px; color:var(--gray)">${i.qty} ${i.unit}</div>
                     </div>
-                    <button onclick="deleteItem('${i.fbKey}')" style="background:none; border:none; color:var(--red); font-size:20px; padding:10px;">×</button>
+                    <button onclick="deleteItem('${i.fbKey}')" style="background:none; border:none; color:var(--red); font-size:18px;">×</button>
                 </div>`;
             });
         }
@@ -215,14 +218,16 @@
         document.getElementById('cat-title').innerText = cat;
         const g = document.getElementById('product-grid');
         g.innerHTML = library[cat].map(p => `<div class="item-card" onclick="askQty('${p[1]}', '${p[0]}', '${cat}')"><span>${p[0]}</span>${p[1]}</div>`).join('');
-        openModal('product-modal'); closeModal('cat-modal');
+        closeModal('cat-modal');
+        openModal('product-modal');
     }
 
     function askQty(name, icon, cat) {
         selectedProto = { name, icon, cat };
         document.getElementById('selected-item-title').innerText = name;
         document.getElementById('qty-input').value = "";
-        openModal('qty-modal'); closeModal('product-modal');
+        closeModal('product-modal');
+        openModal('qty-modal');
     }
 
     async function saveFinal(unit) {
@@ -238,7 +243,7 @@
     }
 
     async function toggleCheck(key, status) {
-        vibrate(); // Rezgés Note 20-on
+        if (navigator.vibrate) navigator.vibrate(30);
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { 
             method: 'PATCH', body: JSON.stringify({ checked: !status, checkTime: !status ? Date.now() : null }) 
         });
@@ -246,17 +251,17 @@
     }
 
     async function deleteItem(key) {
-        vibrate();
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'DELETE' });
         loadList();
     }
 
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function showLoading(s) { document.getElementById('loading-overlay').style.display = s ? 'flex' : 'none'; }
     function logout() { localStorage.removeItem('kosar_v2_session'); location.reload(); }
 
-    if(currentUser) initApp();
+    if(currentUser) {
+        initApp();
+        history.pushState(null, null, window.location.pathname);
+    }
 </script>
 </body>
 </html>
