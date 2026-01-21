@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Elite Kosár 2026</title>
+    <style>
+        :root {
+            --bg: #0b0b0c;
+            --glass: #1c1c1e;
+            --accent: #30d158;
+            --text: #ffffff;
+            --gray: #8e8e93;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        #user-header { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 10px; }
+        h1 { text-align: center; margin-bottom: 30px; font-weight: 800; }
+
+        /* Lista stílus */
+        .list-item {
+            background: var(--glass);
+            padding: 18px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        .list-item.checked { opacity: 0.5; text-decoration: line-through; border-color: transparent; }
+        
+        .checkbox {
+            width: 26px; height: 26px;
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            margin-right: 15px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .checkbox.active::after { content: '✓'; color: var(--accent); font-weight: bold; }
+
+        /* Kategória Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; flex-direction: column; overflow-y: auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        
+        .cat-card {
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .cat-card img { width: 40px; height: 40px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
+
+        .add-btn {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--accent);
+            color: black; border: none; padding: 18px 40px;
+            border-radius: 30px; font-weight: 800; font-size: 16px;
+            box-shadow: 0 10px 20px rgba(48, 209, 88, 0.3);
+        }
+
+        .qty-input {
+            background: #2c2c2e; border: 1px solid var(--accent);
+            color: white; padding: 15px; border-radius: 15px;
+            width: 80%; font-size: 20px; text-align: center; margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="user-header">Töltés...</div>
+<h1>Bevásárlólista</h1>
+
+<div id="shopping-list">
+    </div>
+
+<button class="add-btn" onclick="openModal('cat-modal')">➕ TÉTELEK HOZZÁADÁSA</button>
+
+<div id="cat-modal" class="modal">
+    <h2>Kategóriák</h2>
+    <div class="grid">
+        <div class="cat-card" onclick="showProducts('Gyümölcs', '🍎')">🍎<br>Gyümölcs</div>
+        <div class="cat-card" onclick="showProducts('Zöldség', '🥦')">🥦<br>Zöldség</div>
+        <div class="cat-card" onclick="showProducts('Tejtermék', '🧀')">🧀<br>Tejtermék</div>
+        <div class="cat-card" onclick="showProducts('Egyéb', '📦')">📦<br>Egyéb</div>
+    </div>
+    <button onclick="closeModal('cat-modal')" style="background:none; color:white; border:none; margin-top:30px">Mégse</button>
+</div>
+
+<div id="product-modal" class="modal">
+    <h2 id="current-cat-name">Termékek</h2>
+    <div id="product-grid" class="grid"></div>
+    <button onclick="closeModal('product-modal')" style="background:none; color:white; border:none; margin-top:30px">Vissza</button>
+</div>
+
+<div id="qty-modal" class="modal" style="justify-content:center; align-items:center">
+    <h2 id="selected-product-name">Mennyiség</h2>
+    <input type="number" id="qty-val" class="qty-input" placeholder="Mennyiség">
+    <div style="display:flex; gap:10px">
+        <button onclick="saveItem('db')" class="add-btn" style="position:static; background:#5e5ce6">db</button>
+        <button onclick="saveItem('kg')" class="add-btn" style="position:static">kg</button>
+    </div>
+</div>
+
+<script>
+    const DB_URL = "https://kiadaskoveto-2e474-default-rtdb.firebaseio.com/";
+    let currentUser = JSON.parse(localStorage.getItem('kiadas_session')) || {name: "Vendég"};
+    let listItems = [];
+    let tempItem = {};
+
+    const products = {
+        'Gyümölcs': ['Alma', 'Banán', 'Narancs', 'Szőlő', 'Eper'],
+        'Zöldség': ['Paradicsom', 'Paprika', 'Krumpli', 'Hagyma', 'Uborka'],
+        'Tejtermék': ['Tej', 'Sajt', 'Vaj', 'Túró', 'Tejföl'],
+        'Egyéb': ['Kenyér', 'Tojás', 'Kávé', 'Víz', 'Cukor']
+    };
+
+    function init() {
+        document.getElementById('user-header').innerText = currentUser.name;
+        loadList();
+        setInterval(checkAutoDelete, 60000); // Percenként ellenőrzi a 12 órát
+    }
+
+    async function loadList() {
+        const res = await fetch(`${DB_URL}shopping_list/${currentUser.name}.json`);
+        const data = await res.json();
+        listItems = data ? Object.keys(data).map(k => ({...data[k], fbKey: k})) : [];
+        renderList();
+    }
+
+    function renderList() {
+        const container = document.getElementById('shopping-list');
+        container.innerHTML = "";
+        listItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = `list-item ${item.checked ? 'checked' : ''}`;
+            div.innerHTML = `
+                <div class="checkbox ${item.checked ? 'active' : ''}" onclick="toggleCheck('${item.fbKey}', ${item.checked})"></div>
+                <div>
+                    <strong>${item.name}</strong><br>
+                    <small style="color:var(--gray)">${item.qty} ${item.unit}</small>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function showProducts(cat, icon) {
+        const grid = document.getElementById('product-grid');
+        grid.innerHTML = "";
+        products[cat].forEach(p => {
+            grid.innerHTML += `<div class="cat-card" onclick="askQty('${p}')">${p}</div>`;
+        });
+        document.getElementById('current-cat-name').innerText = cat;
+        closeModal('cat-modal');
+        openModal('product-modal');
+    }
+
+    function askQty(p) {
+        tempItem = { name: p };
+        document.getElementById('selected-product-name').innerText = p;
+        closeModal('product-modal');
+        openModal('qty-modal');
+    }
+
+    async function saveItem(unit) {
+        const qty = document.getElementById('qty-val').value || 1;
+        const newItem = { 
+            name: tempItem.name, 
+            qty: qty, 
+            unit: unit, 
+            checked: false, 
+            timestamp: Date.now() 
+        };
+        await fetch(`${DB_URL}shopping_list/${currentUser.name}.json`, { method: 'POST', body: JSON.stringify(newItem) });
+        document.getElementById('qty-val').value = "";
+        closeModal('qty-modal');
+        loadList();
+    }
+
+    async function toggleCheck(key, currentStatus) {
+        const update = { checked: !currentStatus, checkTime: !currentStatus ? Date.now() : null };
+        await fetch(`${DB_URL}shopping_list/${currentUser.name}/${key}.json`, { method: 'PATCH', body: JSON.stringify(update) });
+        loadList();
+    }
+
+    async function checkAutoDelete() {
+        const now = Date.now();
+        const twelveHours = 12 * 60 * 60 * 1000;
+        for (let item of listItems) {
+            if (item.checked && item.checkTime && (now - item.checkTime > twelveHours)) {
+                await fetch(`${DB_URL}shopping_list/${currentUser.name}/${item.fbKey}.json`, { method: 'DELETE' });
+                loadList();
+            }
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
