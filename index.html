@@ -7,51 +7,66 @@
     <style>
         :root { 
             --bg: #000000; 
-            --glass: rgba(28, 28, 30, 0.8);
-            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(18, 18, 18, 0.9);
+            --border: rgba(48, 209, 88, 0.3); /* Neon zöldes szegély */
             --accent: #30d158;
             --purple: #5e5ce6;
             --text: #ffffff; 
             --gray: #8e8e93; 
             --red: #ff453a;
+            --neon-shadow: 0 0 10px rgba(48, 209, 88, 0.2);
         }
         
         body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .container { max-width: 450px; margin: auto; background: var(--glass); backdrop-filter: blur(10px); padding: 25px; border-radius: 32px; border: 1px solid var(--border); min-height: 85vh; position: relative; }
+        .container { max-width: 450px; margin: auto; background: var(--bg); padding: 25px; border-radius: 32px; min-height: 85vh; position: relative; }
         
-        #user-info { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 5px; }
-        h1 { text-align: center; margin: 0 0 30px 0; font-weight: 800; font-size: 34px; letter-spacing: -1px; }
+        /* Neon stílusú gombok */
+        .main-btn { 
+            width: 100%; background: transparent; color: var(--accent); 
+            border: 2px solid var(--accent); padding: 18px; border-radius: 20px; 
+            font-size: 16px; font-weight: 800; cursor: pointer; 
+            box-shadow: var(--neon-shadow); transition: 0.2s;
+        }
+        .main-btn:active { transform: scale(0.96); background: rgba(48, 209, 88, 0.1); }
+
+        /* Kategória fejlécek a listában */
+        .category-header { 
+            font-size: 12px; color: var(--accent); font-weight: 800; 
+            text-transform: uppercase; letter-spacing: 2px;
+            margin: 20px 0 10px 10px; display: flex; align-items: center;
+        }
+        .category-header::after { content: ''; flex: 1; height: 1px; background: var(--border); margin-left: 10px; }
+
+        .list-item { 
+            background: rgba(255,255,255,0.05); padding: 16px; border-radius: 18px; 
+            margin-bottom: 8px; display: flex; align-items: center; 
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .list-item.checked { opacity: 0.3; filter: grayscale(1); border-color: transparent; }
         
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; font-size: 16px; text-align: center; box-sizing: border-box; margin-bottom: 15px; outline: none; }
-        
-        .list-item { background: rgba(255,255,255,0.03); padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid var(--border); }
-        .list-item.checked { opacity: 0.4; text-decoration: line-through; border-color: transparent; }
-        
-        .checkbox { width: 28px; height: 28px; border: 2px solid var(--accent); border-radius: 10px; margin-right: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .checkbox { width: 26px; height: 26px; border: 2px solid var(--accent); border-radius: 8px; margin-right: 15px; display: flex; align-items: center; justify-content: center; }
         .checkbox.active::after { content: '✓'; color: var(--accent); font-weight: 900; }
 
-        .main-btn { width: 100%; background: var(--accent); color: black; border: none; padding: 20px; border-radius: 22px; font-size: 16px; font-weight: 800; cursor: pointer; }
-        
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding: 20px 0; }
-        .modal-content { background: #1c1c1e; padding: 25px; border-radius: 35px; width: 90%; max-width: 400px; border: 1px solid var(--border); margin: auto; text-align: center; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+        /* Modálok és Gridek */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: #121212; padding: 25px; border-radius: 30px; width: 85%; border: 1px solid var(--border); text-align: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
         .product-grid { grid-template-columns: 1fr 1fr 1fr; }
-        .item-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 600; }
-        .item-card span { font-size: 28px; margin-bottom: 8px; }
+        .item-card { background: #1a1a1a; padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; font-size: 11px; }
+        .item-card span { font-size: 24px; margin-bottom: 5px; }
 
-        .sub-btn { background: var(--purple); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-size: 14px; margin: 5px; }
-        #loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        input { width: 100%; background: #1a1a1a; border: 1px solid var(--border); padding: 15px; border-radius: 15px; color: #fff; text-align: center; margin-bottom: 10px; }
+        #loading-overlay { position: fixed; inset: 0; background: black; z-index: 3000; display: none; align-items: center; justify-content: center; font-weight: 800; color: var(--accent); }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay">Szinkronizálás...</div>
+<div id="loading-overlay">FRISSÍTÉS...</div>
 
 <div id="login-screen">
-    <div class="container" style="border:none; background:transparent; display: flex; flex-direction: column; justify-content: center;">
-        <h2 style="font-size: 28px; text-align: center; margin-bottom:30px">Elite Kosár</h2>
+    <div class="container" style="display: flex; flex-direction: column; justify-content: center;">
+        <h1 style="color: var(--accent); text-shadow: var(--neon-shadow);">Elite Kosár</h1>
         <input type="text" id="login-user" placeholder="Név">
         <input type="password" id="login-pass" placeholder="Jelszó">
         <button class="main-btn" onclick="handleLogin()">BELÉPÉS</button>
@@ -59,19 +74,21 @@
 </div>
 
 <div id="app-content" class="container hidden">
-    <div id="user-info"></div>
-    <h1>Bevásárlólista</h1>
+    <div id="user-info" style="color: var(--accent); font-size: 10px; text-align: center; letter-spacing: 3px;"></div>
+    <h1 style="margin-bottom: 10px;">Lista</h1>
+    
     <div id="shopping-list"></div>
+    
     <div style="height: 120px;"></div>
-    <div style="position: sticky; bottom: 0; background: var(--bg); padding: 10px 0;">
-        <button class="main-btn" onclick="openModal('cat-modal')">➕ TÉTELEK HOZZÁADÁSA</button>
-        <button id="admin-btn" class="main-btn" style="background:none; color:var(--purple); font-size: 13px; margin-top:5px; display:none" onclick="openModal('admin-modal')">👤 FELHASZNÁLÓK KEZELÉSE</button>
-        <button class="main-btn" style="background:none; color:var(--red); border:none; font-size:12px" onclick="logout()">Kijelentkezés</button>
+    <div style="position: sticky; bottom: 0; background: var(--bg); padding: 15px 0;">
+        <button class="main-btn" onclick="openModal('cat-modal')">➕ ÚJ TÉTEL</button>
+        <button id="admin-btn" style="display:none; background:none; border:none; color:var(--purple); width:100%; margin-top:10px;" onclick="openModal('admin-modal')">Adminisztráció</button>
+        <button onclick="logout()" style="background:none; border:none; color:var(--red); width:100%; margin-top:10px; font-size:11px;">Kijelentkezés</button>
     </div>
 </div>
 
 <div id="cat-modal" class="modal"><div class="modal-content">
-    <h2>Kategóriák</h2>
+    <h2 style="color:var(--accent)">Kategóriák</h2>
     <div class="grid">
         <div class="item-card" onclick="showProducts('Gyümölcs')"><span>🍎</span>Gyümölcs</div>
         <div class="item-card" onclick="showProducts('Zöldség')"><span>🥦</span>Zöldség</div>
@@ -80,35 +97,31 @@
         <div class="item-card" onclick="showProducts('Felvágott')"><span>🍱</span>Felvágott</div>
         <div class="item-card" onclick="showProducts('Egyéb')"><span>📦</span>Egyéb</div>
     </div>
-    <button onclick="closeModal('cat-modal')" style="background:none; border:none; color:var(--gray)">Bezárás</button>
+    <button onclick="closeModal('cat-modal')" style="color:var(--gray); background:none; border:none;">Bezárás</button>
 </div></div>
 
 <div id="product-modal" class="modal"><div class="modal-content">
-    <h2 id="cat-title">Termékek</h2>
+    <h2 id="cat-title" style="color:var(--accent)"></h2>
     <div id="product-grid" class="grid product-grid"></div>
-    <button onclick="openModal('cat-modal'); closeModal('product-modal')" style="background:none; border:none; color:var(--gray)">Vissza</button>
+    <button onclick="openModal('cat-modal'); closeModal('product-modal')" style="color:var(--gray); background:none; border:none;">Vissza</button>
 </div></div>
 
 <div id="qty-modal" class="modal"><div class="modal-content">
-    <h2 id="selected-item-title">Mennyiség</h2>
+    <h2 id="selected-item-title" style="color:var(--accent)"></h2>
     <div id="sub-type-area"></div>
-    <div id="custom-name-area" style="display:none; margin: 15px 0;">
-        <input type="text" id="custom-name-input" placeholder="Pontos név...">
-    </div>
-    <input type="number" id="qty-input" placeholder="0" inputmode="numeric">
+    <input type="number" id="qty-input" placeholder="Mennyiség" inputmode="numeric">
     <div class="grid">
-        <button class="main-btn" onclick="saveFinal('db')" style="background:var(--purple); color:white">db</button>
-        <button class="main-btn" onclick="saveFinal('kg')">kg</button>
+        <button class="main-btn" onclick="saveFinal('db')">db</button>
+        <button class="main-btn" onclick="saveFinal('kg')" style="border-color:var(--purple); color:var(--purple)">kg</button>
     </div>
-    <button onclick="closeModal('qty-modal')" style="background:none; border:none; color:var(--gray)">Mégse</button>
 </div></div>
 
 <div id="admin-modal" class="modal"><div class="modal-content">
-    <h3>Új felhasználó (Kosár)</h3>
+    <h3>Új felhasználó</h3>
     <input type="text" id="new-user-name" placeholder="Név">
     <input type="text" id="new-user-pass" placeholder="Jelszó">
-    <button class="main-btn" style="background:var(--purple); color:white" onclick="addUser()">LÉTREHOZÁS</button>
-    <button onclick="closeModal('admin-modal')" style="background:none; border:none; color:var(--gray)">Bezárás</button>
+    <button class="main-btn" onclick="addUser()">Létrehozás</button>
+    <button onclick="closeModal('admin-modal')" style="color:var(--gray); background:none; border:none; margin-top:10px;">Bezárás</button>
 </div></div>
 
 <script>
@@ -119,13 +132,18 @@
     let subType = "";
 
     const library = {
-        'Gyümölcs': [['🍎','Alma'], ['🍌','Banán'], ['🍊','Mandarin'], ['🍐','Körte'], ['🍑','Barack'], ['🍋','Citrom'], ['🍇','Szőlő']],
-        'Zöldség': [['🥬','Káposzta'], ['🎋','Zeller'], ['🥦','Karfiol'], ['🍅','Paradicsom'], ['🌶️','Paprika'], ['🥔','Krumpli'], ['🧅','Hagyma']],
-        'Tejtermék': [['🥛','Tej'], ['🧀','Sajt'], ['🍚','Túró'], ['🍶','Tejföl'], ['🍶','Joghurt'], ['🍶','Kefír'], ['🥚','Tojás']],
-        'Húsok': [['🐖','Tarja'], ['🐖','Lapocka'], ['🐖','Comb (Sertés)'], ['🐖','Oldalas'], ['🐖','Karaj'], ['🐔','Mell (Csirke)'], ['🐔','Farhát'], ['🐔','Comb (Csirke)']],
-        'Felvágott': [['🌭','Virsli'], ['🍖','Sonka'], ['🍱','Felvágott (Egyedi)']],
-        'Egyéb': [['🍞','Kenyér'], ['☕','Kávé'], ['🧻','Papír'], ['✨','EGYÉB...']]
+        'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye']],
+        'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka']],
+        'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás']],
+        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🐔','Mell'],['🐔','Farhát'],['🐔','Csirkecomb']],
+        'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🍱','Párizsi/Rúd']],
+        'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','EGYÉB...']]
     };
+
+    // --- HAPTIC FEEDBACK (Note 20 rezgés) ---
+    function vibrate() {
+        if (navigator.vibrate) navigator.vibrate(35);
+    }
 
     async function handleLogin() {
         const u = document.getElementById('login-user').value.trim();
@@ -133,7 +151,6 @@
         if(!u || !p) return;
         showLoading(true);
         try {
-            // KÜLÖNÁLLÓ felhasználó tábla: shopping_users
             const res = await fetch(`${DB_URL}shopping_users/${u}.json`);
             let stored = await res.json();
             if (stored && String(stored).replace(/"/g, '') === String(p)) {
@@ -148,7 +165,7 @@
     function initApp() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-content').classList.remove('hidden');
-        document.getElementById('user-info').innerText = currentUser.name;
+        document.getElementById('user-info').innerText = `ÜDVÖZÖLLEK, ${currentUser.name}`;
         if(currentUser.isAdmin) document.getElementById('admin-btn').style.display = 'block';
         loadList();
         setInterval(autoDelete, 60000);
@@ -163,54 +180,65 @@
 
     function render() {
         const c = document.getElementById('shopping-list');
-        c.innerHTML = listItems.length === 0 ? '<p style="text-align:center; color:var(--gray)">Üres a lista.</p>' : 
-        listItems.map(i => `
-            <div class="list-item ${i.checked ? 'checked' : ''}">
-                <div class="checkbox ${i.checked ? 'active' : ''}" onclick="toggleCheck('${i.fbKey}', ${i.checked})"></div>
-                <div style="flex:1">
-                    <div style="font-weight:700">${i.name} ${i.sub ? '<small>('+i.sub+')</small>' : ''}</div>
-                    <div style="font-size:12px; color:var(--gray)">${i.qty} ${i.unit}</div>
-                </div>
-                <button onclick="deleteItem('${i.fbKey}')" style="background:none; border:none; color:var(--red); font-size:22px">×</button>
-            </div>
-        `).join('');
+        if (listItems.length === 0) {
+            c.innerHTML = '<p style="text-align:center; color:var(--gray); margin-top:50px;">Üres a listád.</p>';
+            return;
+        }
+
+        // --- INTELLIGENS CSOPORTOSÍTÁS ---
+        const groups = {};
+        listItems.forEach(item => {
+            if (!groups[item.cat]) groups[item.cat] = [];
+            groups[item.cat].push(item);
+        });
+
+        let html = '';
+        for (const cat in groups) {
+            html += `<div class="category-header">${cat}</div>`;
+            groups[cat].forEach(i => {
+                html += `
+                <div class="list-item ${i.checked ? 'checked' : ''}">
+                    <div class="checkbox ${i.checked ? 'active' : ''}" onclick="toggleCheck('${i.fbKey}', ${i.checked})"></div>
+                    <div style="flex:1" onclick="toggleCheck('${i.fbKey}', ${i.checked})">
+                        <div style="font-weight:700">${i.name} ${i.sub ? '<small>('+i.sub+')</small>' : ''}</div>
+                        <div style="font-size:12px; color:var(--gray)">${i.qty} ${i.unit}</div>
+                    </div>
+                    <button onclick="deleteItem('${i.fbKey}')" style="background:none; border:none; color:var(--red); font-size:20px; padding:10px;">×</button>
+                </div>`;
+            });
+        }
+        c.innerHTML = html;
     }
 
     function showProducts(cat) {
+        currentCat = cat;
         document.getElementById('cat-title').innerText = cat;
         const g = document.getElementById('product-grid');
-        g.innerHTML = library[cat].map(p => `<div class="item-card" onclick="askQty('${p[1]}', '${p[0]}')"><span>${p[0]}</span>${p[1]}</div>`).join('');
+        g.innerHTML = library[cat].map(p => `<div class="item-card" onclick="askQty('${p[1]}', '${p[0]}', '${cat}')"><span>${p[0]}</span>${p[1]}</div>`).join('');
         openModal('product-modal'); closeModal('cat-modal');
     }
 
-    function askQty(name, icon) {
-        selectedProto = { name, icon }; subType = "";
+    function askQty(name, icon, cat) {
+        selectedProto = { name, icon, cat };
         document.getElementById('selected-item-title').innerText = name;
         document.getElementById('qty-input').value = "";
-        const subArea = document.getElementById('sub-type-area');
-        subArea.innerHTML = "";
-        if(name === 'Karaj') {
-            subArea.innerHTML = `<div class="sub-selection"><button class="sub-btn" onclick="subType='Rövid'">Rövid</button><button class="sub-btn" onclick="subType='Hosszú'">Hosszú</button></div>`;
-        } else if(name === 'Comb (Csirke)') {
-            subArea.innerHTML = `<div class="sub-selection"><button class="sub-btn" onclick="subType='Alsó'">Alsó</button><button class="sub-btn" onclick="subType='Felső'">Felső</button><button class="sub-btn" onclick="subType='Egész'">Egész</button></div>`;
-        }
-        document.getElementById('custom-name-area').style.display = (name.includes('Egyedi') || name === 'EGYÉB...') ? 'block' : 'none';
         openModal('qty-modal'); closeModal('product-modal');
     }
 
     async function saveFinal(unit) {
-        let name = selectedProto.name;
-        if(name.includes('Egyedi') || name === 'EGYÉB...') {
-            name = document.getElementById('custom-name-input').value || "Egyéb";
-        }
         const qty = document.getElementById('qty-input').value || 1;
-        const item = { name: selectedProto.icon + " " + name, qty, unit, sub: subType, checked: false, timestamp: Date.now() };
+        const item = { 
+            name: selectedProto.icon + " " + selectedProto.name, 
+            qty, unit, cat: selectedProto.cat,
+            checked: false, timestamp: Date.now() 
+        };
         showLoading(true);
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`, { method: 'POST', body: JSON.stringify(item) });
         closeModal('qty-modal'); loadList(); showLoading(false);
     }
 
     async function toggleCheck(key, status) {
+        vibrate(); // Rezgés Note 20-on
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { 
             method: 'PATCH', body: JSON.stringify({ checked: !status, checkTime: !status ? Date.now() : null }) 
         });
@@ -218,36 +246,15 @@
     }
 
     async function deleteItem(key) {
-        if(confirm("Törlöd?")) {
-            showLoading(true);
-            await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'DELETE' });
-            loadList(); showLoading(false);
-        }
+        vibrate();
+        await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'DELETE' });
+        loadList();
     }
 
-    async function addUser() {
-        const n = document.getElementById('new-user-name').value, p = document.getElementById('new-user-pass').value;
-        if(!n || !p) return;
-        showLoading(true);
-        // KÜLÖNÁLLÓ felhasználó mentés: shopping_users
-        await fetch(`${DB_URL}shopping_users/${n}.json`, { method: 'PUT', body: JSON.stringify(p) });
-        alert("Siker! Most már be tud lépni."); closeModal('admin-modal'); showLoading(false);
-    }
-
-    function autoDelete() {
-        const limit = 12 * 60 * 60 * 1000;
-        listItems.forEach(async i => {
-            if(i.checked && i.checkTime && (Date.now() - i.checkTime > limit)) {
-                await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${i.fbKey}.json`, { method: 'DELETE' });
-                loadList();
-            }
-        });
-    }
-
-    function logout() { localStorage.removeItem('kosar_v2_session'); location.reload(); }
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function showLoading(s) { document.getElementById('loading-overlay').style.display = s ? 'flex' : 'none'; }
+    function logout() { localStorage.removeItem('kosar_v2_session'); location.reload(); }
 
     if(currentUser) initApp();
 </script>
