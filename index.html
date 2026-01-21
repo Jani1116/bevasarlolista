@@ -13,40 +13,61 @@
             --purple: #5e5ce6;
             --text: #ffffff; 
             --gray: #8e8e93; 
+            --red: #ff453a;
         }
         
         body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .container { max-width: 450px; margin: auto; background: var(--glass); backdrop-filter: blur(10px); padding: 25px; border-radius: 32px; border: 1px solid var(--border); min-height: 80vh; position: relative; }
+        .container { max-width: 450px; margin: auto; background: var(--glass); backdrop-filter: blur(10px); padding: 25px; border-radius: 32px; border: 1px solid var(--border); min-height: 85vh; position: relative; }
+        
         #user-info { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 5px; }
         h1 { text-align: center; margin: 0 0 30px 0; font-weight: 800; font-size: 34px; letter-spacing: -1px; }
-
+        
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; font-size: 16px; text-align: center; box-sizing: border-box; margin-bottom: 15px; outline: none; }
+        
         .list-item { background: rgba(255,255,255,0.03); padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid var(--border); }
         .list-item.checked { opacity: 0.4; text-decoration: line-through; border-color: transparent; }
+        
         .checkbox { width: 28px; height: 28px; border: 2px solid var(--accent); border-radius: 10px; margin-right: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .checkbox.active::after { content: '✓'; color: var(--accent); font-weight: 900; }
 
         .main-btn { width: 100%; background: var(--accent); color: black; border: none; padding: 20px; border-radius: 22px; font-size: 16px; font-weight: 800; cursor: pointer; }
+        
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding: 20px 0; }
         .modal-content { background: #1c1c1e; padding: 25px; border-radius: 35px; width: 90%; max-width: 400px; border: 1px solid var(--border); margin: auto; text-align: center; }
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
         .product-grid { grid-template-columns: 1fr 1fr 1fr; }
-        .item-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; font-size: 13px; font-weight: 600; }
+        .item-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 600; }
         .item-card span { font-size: 28px; margin-bottom: 8px; }
 
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 15px; border-radius: 15px; color: #fff; font-size: 18px; text-align: center; box-sizing: border-box; }
-        .sub-selection { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; justify-content: center; }
-        .sub-btn { background: var(--purple); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-size: 14px; }
+        .sub-btn { background: var(--purple); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-size: 14px; margin: 5px; }
+        #loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="user-info">Jani</div>
+<div id="loading-overlay">Szinkronizálás...</div>
+
+<div id="login-screen">
+    <div class="container" style="border:none; background:transparent; display: flex; flex-direction: column; justify-content: center;">
+        <h2 style="font-size: 28px; text-align: center; margin-bottom:30px">Elite Kosár</h2>
+        <input type="text" id="login-user" placeholder="Név">
+        <input type="password" id="login-pass" placeholder="Jelszó">
+        <button class="main-btn" onclick="handleLogin()">BELÉPÉS</button>
+    </div>
+</div>
+
+<div id="app-content" class="container hidden">
+    <div id="user-info"></div>
     <h1>Bevásárlólista</h1>
     <div id="shopping-list"></div>
-    <div style="height: 80px;"></div>
-    <button class="main-btn" style="position: sticky; bottom: 0;" onclick="openModal('cat-modal')">➕ TÉTELEK HOZZÁADÁSA</button>
+    <div style="height: 120px;"></div>
+    <div style="position: sticky; bottom: 0; background: var(--bg); padding: 10px 0;">
+        <button class="main-btn" onclick="openModal('cat-modal')">➕ TÉTELEK HOZZÁADÁSA</button>
+        <button id="admin-btn" class="main-btn" style="background:none; color:var(--purple); font-size: 13px; margin-top:5px; display:none" onclick="openModal('admin-modal')">👤 FELHASZNÁLÓK KEZELÉSE</button>
+        <button class="main-btn" style="background:none; color:var(--red); border:none; font-size:12px" onclick="logout()">Kijelentkezés</button>
+    </div>
 </div>
 
 <div id="cat-modal" class="modal"><div class="modal-content">
@@ -55,8 +76,8 @@
         <div class="item-card" onclick="showProducts('Gyümölcs')"><span>🍎</span>Gyümölcs</div>
         <div class="item-card" onclick="showProducts('Zöldség')"><span>🥦</span>Zöldség</div>
         <div class="item-card" onclick="showProducts('Tejtermék')"><span>🥛</span>Tejtermék</div>
-        <div class="item-card" onclick="showProducts('Húsok')"><span>🐖</span>Húsok</div>
-        <div class="item-card" onclick="showProducts('Felvágott')"><span>🥓</span>Felvágott</div>
+        <div class="item-card" onclick="showProducts('Húsok')"><span>🥩</span>Húsok</div>
+        <div class="item-card" onclick="showProducts('Felvágott')"><span>🍱</span>Felvágott</div>
         <div class="item-card" onclick="showProducts('Egyéb')"><span>📦</span>Egyéb</div>
     </div>
     <button onclick="closeModal('cat-modal')" style="background:none; border:none; color:var(--gray)">Bezárás</button>
@@ -70,45 +91,71 @@
 
 <div id="qty-modal" class="modal"><div class="modal-content">
     <h2 id="selected-item-title">Mennyiség</h2>
-    
-    <div id="sub-type-area" style="margin-bottom:15px"></div>
-
-    <div id="custom-name-area" style="display:none; margin-bottom: 15px;">
+    <div id="sub-type-area"></div>
+    <div id="custom-name-area" style="display:none; margin: 15px 0;">
         <input type="text" id="custom-name-input" placeholder="Pontos név...">
     </div>
-
-    <input type="number" id="qty-input" placeholder="Mennyiség" inputmode="numeric">
+    <input type="number" id="qty-input" placeholder="0" inputmode="numeric">
     <div class="grid">
-        <button class="main-btn" onclick="saveFinal('db')" style="background:var(--purple)">db</button>
+        <button class="main-btn" onclick="saveFinal('db')" style="background:var(--purple); color:white">db</button>
         <button class="main-btn" onclick="saveFinal('kg')">kg</button>
     </div>
     <button onclick="closeModal('qty-modal')" style="background:none; border:none; color:var(--gray)">Mégse</button>
 </div></div>
 
+<div id="admin-modal" class="modal"><div class="modal-content">
+    <h3>Új felhasználó (Kosár)</h3>
+    <input type="text" id="new-user-name" placeholder="Név">
+    <input type="text" id="new-user-pass" placeholder="Jelszó">
+    <button class="main-btn" style="background:var(--purple); color:white" onclick="addUser()">LÉTREHOZÁS</button>
+    <button onclick="closeModal('admin-modal')" style="background:none; border:none; color:var(--gray)">Bezárás</button>
+</div></div>
+
 <script>
     const DB_URL = "https://kiadaskoveto-2e474-default-rtdb.firebaseio.com/";
-    let currentUser = JSON.parse(localStorage.getItem('kiadas_session')) || {name: "Jani"};
+    let currentUser = JSON.parse(localStorage.getItem('kosar_v2_session'));
     let listItems = [];
     let selectedProto = {};
     let subType = "";
 
     const library = {
-        'Gyümölcs': [['🍎','Alma'], ['🍌','Banán'], ['🍊','Narancs'], ['🍓','Eper'], ['🍋','Citrom'], ['🍇','Szőlő']],
-        'Zöldség': [['🥦','Brokkoli'], ['🍅','Paradicsom'], ['🌶️','Paprika'], ['🥔','Krumpli'], ['🧅','Hagyma'], ['🥕','Sárgarépa']],
-        'Tejtermék': [['🥛','Tej'], ['🧀','Sajt'], ['🧈','Vaj'], ['🍚','Túró'], ['🍶','Tejföl'], ['🥚','Tojás']],
+        'Gyümölcs': [['🍎','Alma'], ['🍌','Banán'], ['🍊','Mandarin'], ['🍐','Körte'], ['🍑','Barack'], ['🍋','Citrom'], ['🍇','Szőlő']],
+        'Zöldség': [['🥬','Káposzta'], ['🎋','Zeller'], ['🥦','Karfiol'], ['🍅','Paradicsom'], ['🌶️','Paprika'], ['🥔','Krumpli'], ['🧅','Hagyma']],
+        'Tejtermék': [['🥛','Tej'], ['🧀','Sajt'], ['🍚','Túró'], ['🍶','Tejföl'], ['🍶','Joghurt'], ['🍶','Kefír'], ['🥚','Tojás']],
         'Húsok': [['🐖','Tarja'], ['🐖','Lapocka'], ['🐖','Comb (Sertés)'], ['🐖','Oldalas'], ['🐖','Karaj'], ['🐔','Mell (Csirke)'], ['🐔','Farhát'], ['🐔','Comb (Csirke)']],
-        'Felvágott': [['🌭','Virsli'], ['🍖','Sonka'], ['🥓','Felvágott (Egyedi)']],
+        'Felvágott': [['🌭','Virsli'], ['🍖','Sonka'], ['🍱','Felvágott (Egyedi)']],
         'Egyéb': [['🍞','Kenyér'], ['☕','Kávé'], ['🧻','Papír'], ['✨','EGYÉB...']]
     };
 
-    function init() {
+    async function handleLogin() {
+        const u = document.getElementById('login-user').value.trim();
+        const p = document.getElementById('login-pass').value.trim();
+        if(!u || !p) return;
+        showLoading(true);
+        try {
+            // KÜLÖNÁLLÓ felhasználó tábla: shopping_users
+            const res = await fetch(`${DB_URL}shopping_users/${u}.json`);
+            let stored = await res.json();
+            if (stored && String(stored).replace(/"/g, '') === String(p)) {
+                currentUser = { name: u, isAdmin: (u.toLowerCase() === 'jani') };
+                localStorage.setItem('kosar_v2_session', JSON.stringify(currentUser));
+                initApp();
+            } else { alert("Hibás adatok!"); }
+        } catch (e) { alert("Hiba!"); }
+        showLoading(false);
+    }
+
+    function initApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-content').classList.remove('hidden');
         document.getElementById('user-info').innerText = currentUser.name;
+        if(currentUser.isAdmin) document.getElementById('admin-btn').style.display = 'block';
         loadList();
         setInterval(autoDelete, 60000);
     }
 
     async function loadList() {
-        const res = await fetch(`${DB_URL}shopping_list/${currentUser.name}.json`);
+        const res = await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`);
         const data = await res.json();
         listItems = data ? Object.keys(data).map(k => ({...data[k], fbKey: k})) : [];
         render();
@@ -116,13 +163,15 @@
 
     function render() {
         const c = document.getElementById('shopping-list');
-        c.innerHTML = listItems.map(i => `
+        c.innerHTML = listItems.length === 0 ? '<p style="text-align:center; color:var(--gray)">Üres a lista.</p>' : 
+        listItems.map(i => `
             <div class="list-item ${i.checked ? 'checked' : ''}">
                 <div class="checkbox ${i.checked ? 'active' : ''}" onclick="toggleCheck('${i.fbKey}', ${i.checked})"></div>
                 <div style="flex:1">
                     <div style="font-weight:700">${i.name} ${i.sub ? '<small>('+i.sub+')</small>' : ''}</div>
                     <div style="font-size:12px; color:var(--gray)">${i.qty} ${i.unit}</div>
                 </div>
+                <button onclick="deleteItem('${i.fbKey}')" style="background:none; border:none; color:var(--red); font-size:22px">×</button>
             </div>
         `).join('');
     }
@@ -130,36 +179,22 @@
     function showProducts(cat) {
         document.getElementById('cat-title').innerText = cat;
         const g = document.getElementById('product-grid');
-        g.innerHTML = library[cat].map(p => `
-            <div class="item-card" onclick="askQty('${p[1]}', '${p[0]}')"><span>${p[0]}</span>${p[1]}</div>
-        `).join('');
+        g.innerHTML = library[cat].map(p => `<div class="item-card" onclick="askQty('${p[1]}', '${p[0]}')"><span>${p[0]}</span>${p[1]}</div>`).join('');
         openModal('product-modal'); closeModal('cat-modal');
     }
 
     function askQty(name, icon) {
-        selectedProto = { name, icon };
-        subType = "";
+        selectedProto = { name, icon }; subType = "";
         document.getElementById('selected-item-title').innerText = name;
         document.getElementById('qty-input').value = "";
-        
         const subArea = document.getElementById('sub-type-area');
         subArea.innerHTML = "";
-        
         if(name === 'Karaj') {
-            subArea.innerHTML = `<div class="sub-selection">
-                <button class="sub-btn" onclick="subType='Rövid'">Rövid</button>
-                <button class="sub-btn" onclick="subType='Hosszú'">Hosszú</button>
-            </div>`;
+            subArea.innerHTML = `<div class="sub-selection"><button class="sub-btn" onclick="subType='Rövid'">Rövid</button><button class="sub-btn" onclick="subType='Hosszú'">Hosszú</button></div>`;
         } else if(name === 'Comb (Csirke)') {
-            subArea.innerHTML = `<div class="sub-selection">
-                <button class="sub-btn" onclick="subType='Alsó'">Alsó</button>
-                <button class="sub-btn" onclick="subType='Felső'">Felső</button>
-                <button class="sub-btn" onclick="subType='Egész'">Egész</button>
-            </div>`;
+            subArea.innerHTML = `<div class="sub-selection"><button class="sub-btn" onclick="subType='Alsó'">Alsó</button><button class="sub-btn" onclick="subType='Felső'">Felső</button><button class="sub-btn" onclick="subType='Egész'">Egész</button></div>`;
         }
-
         document.getElementById('custom-name-area').style.display = (name.includes('Egyedi') || name === 'EGYÉB...') ? 'block' : 'none';
-        
         openModal('qty-modal'); closeModal('product-modal');
     }
 
@@ -169,31 +204,52 @@
             name = document.getElementById('custom-name-input').value || "Egyéb";
         }
         const qty = document.getElementById('qty-input').value || 1;
-        const item = { name, qty, unit, sub: subType, checked: false, timestamp: Date.now() };
-        await fetch(`${DB_URL}shopping_list/${currentUser.name}.json`, { method: 'POST', body: JSON.stringify(item) });
-        closeModal('qty-modal'); loadList();
+        const item = { name: selectedProto.icon + " " + name, qty, unit, sub: subType, checked: false, timestamp: Date.now() };
+        showLoading(true);
+        await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`, { method: 'POST', body: JSON.stringify(item) });
+        closeModal('qty-modal'); loadList(); showLoading(false);
     }
 
     async function toggleCheck(key, status) {
-        await fetch(`${DB_URL}shopping_list/${currentUser.name}/${key}.json`, { 
+        await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { 
             method: 'PATCH', body: JSON.stringify({ checked: !status, checkTime: !status ? Date.now() : null }) 
         });
         loadList();
+    }
+
+    async function deleteItem(key) {
+        if(confirm("Törlöd?")) {
+            showLoading(true);
+            await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'DELETE' });
+            loadList(); showLoading(false);
+        }
+    }
+
+    async function addUser() {
+        const n = document.getElementById('new-user-name').value, p = document.getElementById('new-user-pass').value;
+        if(!n || !p) return;
+        showLoading(true);
+        // KÜLÖNÁLLÓ felhasználó mentés: shopping_users
+        await fetch(`${DB_URL}shopping_users/${n}.json`, { method: 'PUT', body: JSON.stringify(p) });
+        alert("Siker! Most már be tud lépni."); closeModal('admin-modal'); showLoading(false);
     }
 
     function autoDelete() {
         const limit = 12 * 60 * 60 * 1000;
         listItems.forEach(async i => {
             if(i.checked && i.checkTime && (Date.now() - i.checkTime > limit)) {
-                await fetch(`${DB_URL}shopping_list/${currentUser.name}/${i.fbKey}.json`, { method: 'DELETE' });
+                await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${i.fbKey}.json`, { method: 'DELETE' });
                 loadList();
             }
         });
     }
 
+    function logout() { localStorage.removeItem('kosar_v2_session'); location.reload(); }
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    init();
+    function showLoading(s) { document.getElementById('loading-overlay').style.display = s ? 'flex' : 'none'; }
+
+    if(currentUser) initApp();
 </script>
 </body>
 </html>
