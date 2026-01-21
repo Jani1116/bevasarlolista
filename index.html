@@ -17,8 +17,7 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; overflow-x: hidden; }
         .container { max-width: 450px; margin: auto; min-height: 95vh; display: flex; flex-direction: column; }
         
-        /* Kompakt Fejléc */
-        #user-info { font-size: 11px; color: var(--accent); text-align: right; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+        #user-info { font-size: 11px; color: var(--accent); text-align: center; letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; font-weight: 700; }
         h1 { font-size: 24px; text-align: center; margin: 5px 0 15px 0; font-weight: 800; }
         
         .main-btn { 
@@ -42,7 +41,6 @@
         .checkbox { width: 22px; height: 22px; border: 2px solid var(--accent); border-radius: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; }
         .checkbox.active::after { content: '✓'; color: var(--accent); font-weight: 900; }
 
-        /* Modálok */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: #121212; padding: 20px; border-radius: 24px; width: 88%; border: 1px solid rgba(48, 209, 88, 0.3); }
         
@@ -72,12 +70,21 @@
     
     <div id="shopping-list"></div>
     
-    <div style="height: 100px;"></div>
+    <div style="height: 140px;"></div>
     <div style="position: sticky; bottom: 0; background: var(--bg); padding: 10px 0;">
         <button class="main-btn" onclick="openModal('cat-modal')">➕ ÚJ TÉTEL</button>
+        <button class="main-btn" id="admin-btn" style="display:none; margin-top:8px; border-color:var(--purple); color:var(--purple);" onclick="openModal('admin-modal')">👤 ÚJ FELHASZNÁLÓ</button>
         <button onclick="logout()" style="background:none; border:none; color:var(--red); width:100%; margin-top:10px; font-size:10px; opacity: 0.6;">Kijelentkezés</button>
     </div>
 </div>
+
+<div id="admin-modal" class="modal"><div class="modal-content">
+    <h2 style="text-align:center; font-size:18px;">Új Felhasználó</h2>
+    <input type="text" id="new-user-name" placeholder="Név">
+    <input type="text" id="new-user-pass" placeholder="Jelszó">
+    <button class="main-btn" onclick="addUser()">Létrehozás</button>
+    <button class="main-btn" onclick="closeModal('admin-modal')" style="border:none; color:var(--gray); margin-top:5px;">Mégse</button>
+</div></div>
 
 <div id="cat-modal" class="modal"><div class="modal-content">
     <h2 style="text-align:center; font-size:18px;">Kategóriák</h2>
@@ -115,14 +122,13 @@
 
     const library = {
         'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye']],
-        'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka']],
+        'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka'],['🧄','Fokhagyma'],['🎃','Sütőtök'],['🍄','Gomba']],
         'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás']],
-        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🐔','Mell'],['🐔','Farhát'],['🐔','Comb']],
-        'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🍱','Párizsi/Rúd']],
+        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🐔','Mell'],['🐔','Farhát'],['🐔','Comb'],['🍗','Szárny']],
+        'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍱','Párizsi/Rúd']],
         'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','EGYÉB...']]
     };
 
-    // --- VISSZA GOMB KEZELÉSE ---
     window.addEventListener('popstate', function(event) {
         if (activeModal) {
             event.preventDefault();
@@ -152,7 +158,6 @@
         openModal('cat-modal');
     }
 
-    // --- ALAP FUNKCIÓK ---
     async function handleLogin() {
         const u = document.getElementById('login-user').value.trim();
         const p = document.getElementById('login-pass').value.trim();
@@ -162,7 +167,7 @@
             const res = await fetch(`${DB_URL}shopping_users/${u}.json`);
             let stored = await res.json();
             if (stored && String(stored).replace(/"/g, '') === String(p)) {
-                currentUser = { name: u };
+                currentUser = { name: u, isAdmin: (u.toLowerCase() === 'jani') };
                 localStorage.setItem('kosar_v2_session', JSON.stringify(currentUser));
                 initApp();
             } else { alert("Hibás!"); }
@@ -174,7 +179,19 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'flex';
         document.getElementById('user-info').innerText = currentUser.name;
+        if(currentUser.isAdmin) document.getElementById('admin-btn').style.display = 'block';
         loadList();
+    }
+
+    async function addUser() {
+        const name = document.getElementById('new-user-name').value.trim();
+        const pass = document.getElementById('new-user-pass').value.trim();
+        if(!name || !pass) return;
+        showLoading(true);
+        await fetch(`${DB_URL}shopping_users/${name}.json`, { method: 'PUT', body: JSON.stringify(pass) });
+        alert("Sikeres mentés!");
+        closeModal('admin-modal');
+        showLoading(false);
     }
 
     async function loadList() {
