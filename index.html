@@ -66,7 +66,7 @@
         <div class="item-card" onclick="showHusValaszto()"><span>🥩</span>Húsok</div>
         <div class="item-card" onclick="showProducts('Fagyasztott')"><span>❄️</span>Fagyasztott</div>
         <div class="item-card" onclick="showProducts('Háztartás')"><span>🧼</span>Háztartás</div>
-        <div class="item-card" onclick="showProducts('Felvágott')"><span>🍱</span>Felvágott</div>
+        <div class="item-card" onclick="showProducts('Felvágott')"><span>🥓</span>Felvágott</div>
         <div class="item-card" onclick="showProducts('Egyéb')"><span>📦</span>Egyéb</div>
     </div>
     <button class="main-btn" onclick="closeModal('cat-modal')" style="border:none; color:var(--gray)">Mégse</button>
@@ -120,7 +120,7 @@
         'Csirke': [['🍗','Comb'],['🍗','Mell'],['🍗','Farhát'],['🍗','Szárny'],['✨','Egyéb']],
         'Fagyasztott': [['🫛','Zöldborsó'],['🥦','Zöldbab'],['🥕','Vegyes zöldség'],['🍟','Nuggets'],['🧀','Sajttal töltött'],['🥩','Máj'],['🍦','Jégkrém'],['❄️','Egyéb']],
         'Háztartás': [['🧼','Mosogatószer'],['🧺','Mosószer'],['🧽','Szivacs'],['✨','Egyéb']],
-        'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍱','Párizsi/Rúd'],['✨','Egyéb']],
+        'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍖','Felvágott'],['✨','Egyéb']],
         'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','Egyéb']]
     };
 
@@ -189,7 +189,18 @@
         const res = await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`);
         const data = await res.json();
         listItems = data ? Object.keys(data).map(k => ({...data[k], fbKey: k})) : [];
+        cleanupOldItems();
         render();
+    }
+
+    async function cleanupOldItems() {
+        const now = Date.now();
+        const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+        for (const item of listItems) {
+            if (item.checked && item.timestamp && (now - item.timestamp > TWELVE_HOURS)) {
+                await deleteItem(item.fbKey, true);
+            }
+        }
     }
 
     function render() {
@@ -292,13 +303,17 @@
     }
 
     async function toggleCheck(key, status) {
-        await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'PATCH', body: JSON.stringify({ checked: !status }) });
+        await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { 
+            method: 'PATCH', 
+            body: JSON.stringify({ checked: !status, timestamp: Date.now() }) 
+        });
         loadList();
     }
 
-    async function deleteItem(key) {
+    async function deleteItem(key, silent = false) {
+        if (!silent) showLoading(true);
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'DELETE' });
-        loadList();
+        if (!silent) { loadList(); showLoading(false); }
     }
 
     function showLoading(s) { document.getElementById('loading-overlay').style.display = s ? 'flex' : 'none'; }
