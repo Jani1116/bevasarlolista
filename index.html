@@ -127,7 +127,20 @@
         'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','Egyéb']]
     };
 
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; history.pushState(null, null, window.location.pathname); }
+    // --- VISSZA GOMB KEZELÉSE ---
+    window.addEventListener('popstate', function(event) {
+        const openModals = document.querySelectorAll('.modal[style*="display: flex"]');
+        if (openModals.length > 0) {
+            closeAllModals();
+            history.pushState(null, null, window.location.pathname);
+        }
+    });
+
+    function openModal(id) { 
+        document.getElementById(id).style.display = 'flex'; 
+        history.pushState(null, null, window.location.pathname); 
+    }
+    
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
     function goBackToCat() { closeModal('product-modal'); openModal('cat-modal'); }
@@ -154,7 +167,6 @@
         if (!newU) return;
         const newP = prompt("Új felhasználó jelszava:");
         if (!newP) return;
-
         showLoading(true);
         try {
             const checkRes = await fetch(`${DB_URL}shopping_users/${newU}.json`);
@@ -162,10 +174,7 @@
             if (existing) {
                 alert("Ez a név már foglalt!");
             } else {
-                await fetch(`${DB_URL}shopping_users/${newU}.json`, {
-                    method: 'PUT',
-                    body: JSON.stringify(newP)
-                });
+                await fetch(`${DB_URL}shopping_users/${newU}.json`, { method: 'PUT', body: JSON.stringify(newP) });
                 alert("Felhasználó létrehozva!");
             }
         } catch (e) { alert("Hiba!"); }
@@ -176,14 +185,13 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'flex';
         document.getElementById('user-info').innerText = currentUser.name;
-
-        // Admin ellenőrzés
         if (currentUser.name.toLowerCase() === 'jani') {
             document.getElementById('admin-reg-btn').style.display = 'block';
         }
-
         loadList();
         if(!syncInterval) syncInterval = setInterval(loadList, 3000);
+        // Kezdő állapot a vissza gombhoz
+        history.replaceState(null, null, window.location.pathname);
     }
 
     async function loadList() {
@@ -218,7 +226,6 @@
         c.innerHTML = html;
     }
 
-    // Termékkezelő függvények (Változatlanok a kérésed szerint)
     function showProducts(cat) {
         selectedProto.cat = cat;
         document.getElementById('cat-title').innerText = cat;
