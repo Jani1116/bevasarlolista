@@ -77,6 +77,16 @@
     <button class="main-btn" onclick="goBackToCat()" style="border:none; color:var(--gray)">Vissza</button>
 </div></div>
 
+<div id="comb-type-modal" class="modal"><div class="modal-content">
+    <h2 style="text-align:center;">Csirkecomb típusa</h2>
+    <div class="grid">
+        <button class="main-btn" onclick="selectComb('Alsó')">Alsó</button>
+        <button class="main-btn" onclick="selectComb('Felső')">Felső</button>
+        <button class="main-btn" onclick="selectComb('Egész')">Egész</button>
+    </div>
+    <button class="main-btn" onclick="closeModal('comb-type-modal')" style="border:none; color:var(--gray)">Mégse</button>
+</div></div>
+
 <div id="qty-modal" class="modal"><div class="modal-content">
     <h2 id="selected-item-title" style="text-align:center;"></h2>
     <input type="number" id="qty-input" placeholder="Mennyiség" inputmode="decimal">
@@ -109,7 +119,7 @@
         'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye'],['✨','Egyéb']],
         'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka'],['🧄','Fokhagyma'],['🎃','Sütőtök'],['🍄','Gomba'],['✨','Egyéb']],
         'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás'],['✨','Egyéb']],
-        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','H. Karaj'],['🐖','R. Karaj'],['🍗','Mell'],['🦴','Farhát'],['🍗','A. Comb'],['🍗','F. Comb'],['🍗','E. Comb'],['🪽','Szárny'],['✨','Egyéb']],
+        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🍗','Comb'],['🐖','Oldalas'],['🐖','H. Karaj'],['🐖','R. Karaj'],['🍗','Mell'],['🍗','Farhát'],['🍗','Szárny'],['✨','Egyéb']],
         'Fagyasztott': [['🫛','Zöldborsó'],['🥦','Zöldbab'],['🥕','Vegyes zöldség'],['🍟','Nuggets'],['🧀','Sajttal töltött'],['🥩','Máj'],['🍦','Jégkrém'],['❄️','Egyéb']],
         'Háztartás': [['🧼','Mosogatószer'],['🧺','Mosószer'],['🧽','Szivacs'],['✨','Egyéb']],
         'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍱','Párizsi/Rúd'],['✨','Egyéb']],
@@ -200,10 +210,21 @@
         if (name === "Egyéb") {
             document.getElementById('custom-name').value = ""; document.getElementById('custom-qty').value = "";
             closeModal('product-modal'); openModal('custom-modal');
+        } else if (name === "Comb") {
+            closeModal('product-modal');
+            openModal('comb-type-modal');
         } else {
             document.getElementById('selected-item-title').innerText = name; document.getElementById('qty-input').value = "";
             closeModal('product-modal'); openModal('qty-modal');
         }
+    }
+
+    function selectComb(type) {
+        selectedProto.name = type + " Comb";
+        closeModal('comb-type-modal');
+        document.getElementById('selected-item-title').innerText = selectedProto.name;
+        document.getElementById('qty-input').value = "";
+        openModal('qty-modal');
     }
 
     async function saveFinal(unit) {
