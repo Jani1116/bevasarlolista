@@ -25,7 +25,7 @@
         .checkbox { width: 22px; height: 22px; border: 2px solid var(--accent); border-radius: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; }
         .checkbox.active::after { content: '✓'; color: var(--accent); font-weight: 900; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: #121212; padding: 20px; border-radius: 24px; width: 88%; border: 1px solid rgba(48, 209, 88, 0.3); max-height: 80vh; overflow-y: auto; }
+        .modal-content { background: #121212; padding: 20px; border-radius: 24px; width: 88%; border: 1px solid rgba(48, 209, 88, 0.3); max-height: 85vh; overflow-y: auto; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
         .product-grid { grid-template-columns: 1fr 1fr 1fr; }
         .item-card { background: #1a1a1a; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; font-size: 10px; text-align: center; }
@@ -57,14 +57,6 @@
     </div>
 </div>
 
-<div id="admin-modal" class="modal"><div class="modal-content">
-    <h2 style="text-align:center;">Új Felhasználó</h2>
-    <input type="text" id="new-user-name" placeholder="Név">
-    <input type="text" id="new-user-pass" placeholder="Jelszó">
-    <button class="main-btn" onclick="addUser()">Létrehozás</button>
-    <button class="main-btn" onclick="closeModal('admin-modal')" style="border:none; color:var(--gray);">Mégse</button>
-</div></div>
-
 <div id="cat-modal" class="modal"><div class="modal-content">
     <h2 style="text-align:center;">Kategóriák</h2>
     <div class="grid">
@@ -95,26 +87,37 @@
     </div>
 </div></div>
 
+<div id="custom-modal" class="modal"><div class="modal-content">
+    <h2 style="text-align:center;">Egyéb</h2>
+    <input type="text" id="custom-name" placeholder="Megnevezés">
+    <input type="number" id="custom-qty" placeholder="Mennyiség" inputmode="decimal">
+    <div class="grid">
+        <button class="main-btn" onclick="saveCustom('db')">db</button>
+        <button class="main-btn" onclick="saveCustom('kg')" style="border-color:var(--purple); color:var(--purple)">kg</button>
+    </div>
+    <button class="main-btn" onclick="closeModal('custom-modal')" style="border:none; color:var(--gray)">Mégse</button>
+</div></div>
+
 <script>
     const DB_URL = "https://kiadaskoveto-2e474-default-rtdb.firebaseio.com/";
     let currentUser = JSON.parse(localStorage.getItem('kosar_v2_session'));
     let listItems = [];
-    let activeModal = null;
     let syncInterval = null;
+    let selectedProto = {};
 
     const library = {
-        'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye']],
-        'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka'],['🧄','Fokhagyma'],['🎃','Sütőtök'],['🍄','Gomba']],
-        'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás']],
-        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🍗','Cs.Mell'],['🦴','Farhát'],['🍗','Cs.Comb'],['🪽','Szárny']],
-        'Fagyasztott': [['🫛','Zöldborsó'],['🥕','Vegyes zöld'],['🍟','Nuggets'],['🧀','Sajttal töltött'],['🥩','Máj'],['🍦','Jégkrém'],['❄️','Egyéb']],
+        'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye'],['✨','Egyéb']],
+        'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka'],['🧄','Fokhagyma'],['🎃','Sütőtök'],['🍄','Gomba'],['✨','Egyéb']],
+        'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás'],['✨','Egyéb']],
+        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🍗','Cs.Mell'],['🦴','Farhát'],['🍗','Cs.Comb'],['🪽','Szárny'],['✨','Egyéb']],
+        'Fagyasztott': [['🫛','Zöldborsó'],['🥦','Zöldbab'],['🥕','Vegyes zöldség'],['🍟','Nuggets'],['🧀','Sajttal töltött'],['🥩','Máj'],['🍦','Jégkrém'],['❄️','Egyéb']],
         'Háztartás': [['🧼','Mosogatószer'],['🧺','Mosószer'],['🧽','Szivacs'],['✨','Egyéb']],
-        'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍱','Párizsi/Rúd']],
-        'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','EGYÉB...']]
+        'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍱','Párizsi/Rúd'],['✨','Egyéb']],
+        'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','Egyéb']]
     };
 
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; activeModal = id; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; activeModal = null; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function goBackToCat() { closeModal('product-modal'); openModal('cat-modal'); }
 
     async function handleLogin() {
@@ -130,7 +133,7 @@
                 localStorage.setItem('kosar_v2_session', JSON.stringify(currentUser));
                 initApp();
             } else { alert("Hibás jelszó!"); }
-        } catch (e) { alert("Hiba a bejelentkezésnél!"); }
+        } catch (e) { alert("Hiba!"); }
         showLoading(false);
     }
 
@@ -138,27 +141,20 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'flex';
         document.getElementById('user-info').innerText = currentUser.name;
-        if(currentUser.isAdmin) document.getElementById('admin-btn').style.display = 'block';
         loadList();
-        // Valós idejű frissítés: 3 másodpercenként
         if(!syncInterval) syncInterval = setInterval(loadList, 3000);
     }
 
     async function loadList() {
-        try {
-            const res = await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`);
-            const data = await res.json();
-            listItems = data ? Object.keys(data).map(k => ({...data[k], fbKey: k})) : [];
-            render();
-        } catch (e) { console.error("Sync error"); }
+        const res = await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`);
+        const data = await res.json();
+        listItems = data ? Object.keys(data).map(k => ({...data[k], fbKey: k})) : [];
+        render();
     }
 
     function render() {
         const c = document.getElementById('shopping-list');
-        if (listItems.length === 0) {
-            c.innerHTML = '<p style="text-align:center; color:var(--gray); margin-top:30px;">Üres a lista.</p>';
-            return;
-        }
+        if (listItems.length === 0) { c.innerHTML = '<p style="text-align:center; color:var(--gray); margin-top:30px;">Üres a lista.</p>'; return; }
         const groups = {};
         listItems.sort((a,b) => a.timestamp - b.timestamp).forEach(item => {
             if (!groups[item.cat]) groups[item.cat] = [];
@@ -175,7 +171,7 @@
                         <div style="font-weight:700; font-size:14px;">${i.name}</div>
                         <div style="font-size:11px; color:var(--gray)">${i.qty} ${i.unit}</div>
                     </div>
-                    <button onclick="deleteItem('${i.fbKey}')" style="background:none; border:none; color:var(--red); font-size:22px; padding:0 10px;">×</button>
+                    <button onclick="deleteItem('${i.fbKey}')" style="background:none; border:none; color:var(--red); font-size:22px;">×</button>
                 </div>`;
             });
         }
@@ -183,76 +179,69 @@
     }
 
     function showProducts(cat) {
-        currentCat = cat;
+        selectedProto.cat = cat;
         document.getElementById('cat-title').innerText = cat;
         const g = document.getElementById('product-grid');
         g.innerHTML = library[cat].map(p => `
-            <div class="item-card" onclick="handleProductClick('${p[1]}', '${p[0]}', '${cat}')">
+            <div class="item-card" onclick="handleItemClick('${p[1]}', '${p[0]}')">
                 <span>${p[0]}</span>${p[1]}
             </div>`).join('');
         closeModal('cat-modal');
         openModal('product-modal');
     }
 
-    function handleProductClick(name, icon, cat) {
-        if (name === "EGYÉB..." || name === "Egyéb") {
-            const customName = prompt("Mi legyen a tétel neve?");
-            if (!customName) return;
-            askQty(customName, icon, cat);
+    function handleItemClick(name, icon) {
+        selectedProto.name = name;
+        selectedProto.icon = icon;
+        if (name === "Egyéb" || name === "EGYÉB...") {
+            document.getElementById('custom-name').value = "";
+            document.getElementById('custom-qty').value = "";
+            closeModal('product-modal');
+            openModal('custom-modal');
         } else {
-            askQty(name, icon, cat);
+            document.getElementById('selected-item-title').innerText = name;
+            document.getElementById('qty-input').value = "";
+            closeModal('product-modal');
+            openModal('qty-modal');
         }
-    }
-
-    function askQty(name, icon, cat) {
-        selectedProto = { name, icon, cat };
-        document.getElementById('selected-item-title').innerText = name;
-        document.getElementById('qty-input').value = "";
-        closeModal('product-modal');
-        openModal('qty-modal');
-        setTimeout(() => document.getElementById('qty-input').focus(), 300);
     }
 
     async function saveFinal(unit) {
         const qty = document.getElementById('qty-input').value || 1;
-        const item = { 
-            name: selectedProto.icon + " " + selectedProto.name, 
-            qty, unit, cat: selectedProto.cat,
-            checked: false, timestamp: Date.now() 
-        };
+        await pushToDb(selectedProto.icon + " " + selectedProto.name, qty, unit, selectedProto.cat);
+        closeModal('qty-modal');
+    }
+
+    async function saveCustom(unit) {
+        const name = document.getElementById('custom-name').value.trim();
+        const qty = document.getElementById('custom-qty').value || 1;
+        if(!name) { alert("Adj meg egy nevet!"); return; }
+        await pushToDb("✨ " + name, qty, unit, selectedProto.cat);
+        closeModal('custom-modal');
+    }
+
+    async function pushToDb(fullName, qty, unit, cat) {
+        const item = { name: fullName, qty, unit, cat, checked: false, timestamp: Date.now() };
         showLoading(true);
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`, { method: 'POST', body: JSON.stringify(item) });
-        closeModal('qty-modal'); loadList(); showLoading(false);
+        loadList();
+        showLoading(false);
     }
 
     async function toggleCheck(key, status) {
-        if (navigator.vibrate) navigator.vibrate(30);
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { 
-            method: 'PATCH', body: JSON.stringify({ checked: !status, checkTime: !status ? Date.now() : null }) 
+            method: 'PATCH', body: JSON.stringify({ checked: !status }) 
         });
         loadList();
     }
 
     async function deleteItem(key) {
-        if(!confirm("Biztos törlöd?")) return;
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'DELETE' });
         loadList();
     }
 
-    async function addUser() {
-        const name = document.getElementById('new-user-name').value.trim();
-        const pass = document.getElementById('new-user-pass').value.trim();
-        if(!name || !pass) return;
-        showLoading(true);
-        await fetch(`${DB_URL}shopping_users/${name}.json`, { method: 'PUT', body: JSON.stringify(pass) });
-        alert("Felhasználó létrehozva!");
-        closeModal('admin-modal');
-        showLoading(false);
-    }
-
     function showLoading(s) { document.getElementById('loading-overlay').style.display = s ? 'flex' : 'none'; }
-    function logout() { clearInterval(syncInterval); localStorage.removeItem('kosar_v2_session'); location.reload(); }
-
+    function logout() { localStorage.removeItem('kosar_v2_session'); location.reload(); }
     if(currentUser) initApp();
 </script>
 </body>
