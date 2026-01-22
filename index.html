@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Kosár v3</title>
+    <title>Bevásárlólista v3</title>
     <style>
         :root { 
             --bg: #000; 
@@ -25,10 +25,10 @@
             max-width: 400px;
             padding: 20px;
             box-sizing: border-box;
-            text-align: center; /* Mindent középre igazít */
+            text-align: center;
         }
         h1 { 
-            font-size: 28px; 
+            font-size: 26px; 
             margin-top: 50px; 
             margin-bottom: 30px;
             font-weight: 800;
@@ -42,7 +42,7 @@
             background: var(--gray); 
             color: #fff; 
             box-sizing: border-box; 
-            text-align: center; /* Beviteli szöveg is középen */
+            text-align: center; 
             font-size: 16px;
         }
         .btn { 
@@ -55,7 +55,6 @@
             font-weight: bold; 
             font-size: 16px;
             cursor: pointer; 
-            transition: 0.3s;
         }
         #app { display: none; width: 100%; }
         
@@ -64,14 +63,14 @@
             letter-spacing: 2px;
             color: var(--accent);
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
 <div id="login" class="container">
-    <h1>Elite Kosár</h1>
+    <h1>Bevásárlólista írás</h1>
     <input type="text" id="user" placeholder="Felhasználónév">
     <input type="password" id="pass" placeholder="Jelszó">
     <button class="btn" onclick="login()">BELÉPÉS</button>
@@ -93,8 +92,6 @@
 <script>
     function login() {
         const u = document.getElementById('user').value.trim();
-        const p = document.getElementById('pass').value.trim();
-        
         if(u !== "") {
             document.getElementById('login').style.display = 'none';
             document.getElementById('app').style.display = 'block';
