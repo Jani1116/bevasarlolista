@@ -40,13 +40,26 @@
         .btn-purple { border-color: var(--purple); color: var(--purple); display: none; }
         .btn-red { border-color: var(--red); color: var(--red); }
 
+        /* Modal stílusok */
         .modal {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
             z-index: 1000; align-items: center; justify-content: center;
         }
         .modal-content {
-            background: #111; padding: 30px; border-radius: 20px; width: 85%;
-            border: 1px solid var(--purple); text-align: center;
+            background: #111; padding: 25px; border-radius: 20px; width: 90%;
+            border: 1px solid var(--accent); text-align: center; max-height: 80vh; overflow-y: auto;
+        }
+
+        .cat-card {
+            background: var(--gray); padding: 15px; border-radius: 12px;
+            border: 1px solid rgba(48, 209, 88, 0.3); cursor: pointer;
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 14px; font-weight: bold;
+        }
+        .cat-card span { font-size: 24px; margin-bottom: 5px; }
+
+        .grid-2col {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
         }
 
         #app { display: none; width: 100%; }
@@ -74,27 +87,65 @@
     <div id="list-container"><p style="color: #444; margin-top: 50px;">A lista még üres</p></div>
 
     <div class="bottom-nav">
-        <button class="btn btn-main" onclick="alert('Kategóriák...')">+ ÚJ TÉTEL</button>
-        
+        <button class="btn btn-main" onclick="openModal('cat-modal')">+ ÚJ TÉTEL</button>
         <button id="admin-btn" class="btn btn-small btn-purple" onclick="openUserModal()">+ FELHASZNÁLÓ HOZZÁADÁSA</button>
-        
         <button class="btn btn-small btn-red" onclick="logout()">KIJELENTKEZÉS</button>
     </div>
 </div>
 
 <div id="user-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="border-color: var(--purple);">
         <h2 style="color: var(--purple);">Új Felhasználó</h2>
         <input type="text" id="new-username" placeholder="Név" style="border-color: var(--purple);">
         <input type="password" id="new-password" placeholder="Jelszó" style="border-color: var(--purple);">
         <button class="btn btn-main" style="border-color: var(--purple); color: var(--purple);" onclick="saveUser()">LÉTREHOZÁS</button>
-        <button class="btn btn-small btn-red" style="border:none;" onclick="closeUserModal()">MÉGSE</button>
+        <button class="btn btn-small btn-red" style="border:none;" onclick="closeModal('user-modal')">MÉGSE</button>
+    </div>
+</div>
+
+<div id="cat-modal" class="modal">
+    <div class="modal-content">
+        <h2 style="color: var(--accent); margin-top: 0;">Kategóriák</h2>
+        <div class="grid-2col">
+            <div class="cat-card" onclick="openProducts('Gyümölcs')"><span>🍎</span>Gyümölcs</div>
+            <div class="cat-card" onclick="openProducts('Zöldség')"><span>🥦</span>Zöldség</div>
+            <div class="cat-card" onclick="openProducts('Tejtermék')"><span>🥛</span>Tejtermék</div>
+            <div class="cat-card" onclick="openProducts('Húsok')"><span>🥩</span>Húsok</div>
+            <div class="cat-card" onclick="openProducts('Fagyasztott')"><span>❄️</span>Fagyasztott</div>
+            <div class="cat-card" onclick="openProducts('Háztartás')"><span>🧼</span>Háztartás</div>
+            <div class="cat-card" onclick="openProducts('Felvágott')"><span>🍱</span>Felvágott</div>
+            <div class="cat-card" onclick="openProducts('Egyéb')"><span>📦</span>Egyéb</div>
+        </div>
+        <button class="btn btn-small btn-red" onclick="closeModal('cat-modal')">MÉGSE</button>
+    </div>
+</div>
+
+<div id="prod-modal" class="modal">
+    <div class="modal-content">
+        <h2 id="prod-title" style="color: var(--accent); margin-top: 0;"></h2>
+        <div id="prod-container" class="grid-2col"></div>
+        <button class="btn btn-small btn-red" onclick="backToCat()">VISSZA</button>
     </div>
 </div>
 
 <script>
     const DB_URL = "https://kiadaskoveto-2e474-default-rtdb.firebaseio.com/";
     const ADMIN_USER = "Jani"; 
+
+    const products = {
+        'Gyümölcs': [
+            {n: 'Alma', i: '🍎'}, {n: 'Banán', i: '🍌'}, {n: 'Mandarin', i: '🍊'},
+            {n: 'Körte', i: '🍐'}, {n: 'Barack', i: '🍑'}, {n: 'Citrom', i: '🍋'},
+            {n: 'Szőlő', i: '🍇'}, {n: 'Narancs', i: '🍊'}, {n: 'Dinnye', i: '🍉'},
+            {n: 'Egyéb', i: '✨'}
+        ],
+        'Zöldség': [
+            {n: 'Krumpli', i: '🥔'}, {n: 'Vöröshagyma', i: '🧅'}, {n: 'Lilahagyma', i: '🧅'},
+            {n: 'Paradicsom', i: '🍅'}, {n: 'Paprika', i: '🫑'}, {n: 'Uborka', i: '🥒'},
+            {n: 'Répa', i: '🥕'}, {n: 'Fokhagyma', i: '🧄'}, {n: 'Saláta', i: '🥬'},
+            {n: 'Egyéb', i: '✨'}
+        ]
+    };
 
     window.onload = function() {
         const savedUser = localStorage.getItem('loggedUser');
@@ -105,7 +156,6 @@
         const u = document.getElementById('user').value.trim();
         const p = document.getElementById('pass').value.trim();
         if(!u || !p) return alert("Töltsd ki mindkét mezőt!");
-
         try {
             const res = await fetch(`${DB_URL}shopping_users/${u}.json`);
             const storedPass = await res.json();
@@ -123,7 +173,7 @@
         try {
             await fetch(`${DB_URL}shopping_users/${u}.json`, { method: 'PUT', body: JSON.stringify(p) });
             alert("Sikeresen létrehozva!");
-            closeUserModal();
+            closeModal('user-modal');
         } catch (e) { alert("Hiba!"); }
     }
 
@@ -136,8 +186,29 @@
         }
     }
 
-    function openUserModal() { document.getElementById('user-modal').style.display = 'flex'; }
-    function closeUserModal() { document.getElementById('user-modal').style.display = 'none'; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function openUserModal() { openModal('user-modal'); }
+
+    function openProducts(cat) {
+        const container = document.getElementById('prod-container');
+        document.getElementById('prod-title').innerText = cat;
+        container.innerHTML = "";
+        if (products[cat]) {
+            products[cat].forEach(p => {
+                container.innerHTML += `
+                    <div class="cat-card" onclick="alert('${p.n} kiválasztva')">
+                        <span>${p.i}</span>${p.n}
+                    </div>`;
+            });
+        } else {
+            container.innerHTML = "<p style='grid-column: 1/3; color:#444;'>Hamarosan...</p>";
+        }
+        closeModal('cat-modal');
+        openModal('prod-modal');
+    }
+
+    function backToCat() { closeModal('prod-modal'); openModal('cat-modal'); }
     function logout() { localStorage.removeItem('loggedUser'); location.reload(); }
 </script>
 </body>
