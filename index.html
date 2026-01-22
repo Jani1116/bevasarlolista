@@ -109,40 +109,26 @@
         'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye'],['✨','Egyéb']],
         'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka'],['🧄','Fokhagyma'],['🎃','Sütőtök'],['🍄','Gomba'],['✨','Egyéb']],
         'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás'],['✨','Egyéb']],
-        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','Karaj'],['🍗','Cs.Mell'],['🦴','Farhát'],['🍗','Cs.Comb'],['🪽','Szárny'],['✨','Egyéb']],
+        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Comb'],['🐖','Oldalas'],['🐖','H. Karaj'],['🐖','R. Karaj'],['🍗','Mell'],['🦴','Farhát'],['🍗','A. Comb'],['🍗','F. Comb'],['🍗','E. Comb'],['🪽','Szárny'],['✨','Egyéb']],
         'Fagyasztott': [['🫛','Zöldborsó'],['🥦','Zöldbab'],['🥕','Vegyes zöldség'],['🍟','Nuggets'],['🧀','Sajttal töltött'],['🥩','Máj'],['🍦','Jégkrém'],['❄️','Egyéb']],
         'Háztartás': [['🧼','Mosogatószer'],['🧺','Mosószer'],['🧽','Szivacs'],['✨','Egyéb']],
         'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍱','Párizsi/Rúd'],['✨','Egyéb']],
         'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','Egyéb']]
     };
 
-    // --- VISSZA GOMB KEZELÉS (Hardveres/Rendszer) ---
     window.addEventListener('popstate', function(event) {
         const openModals = document.querySelectorAll('.modal[style*="display: flex"]');
         if (openModals.length > 0) {
             closeAllModals();
-            // Megakadályozzuk, hogy ténylegesen visszalépjen az URL-ben
             history.pushState(null, null, window.location.pathname);
         }
     });
 
-    function openModal(id) { 
-        document.getElementById(id).style.display = 'flex'; 
-        // Minden modal nyitásnál tolunk egy állapotot a history-ba
-        history.pushState(null, null, window.location.pathname);
-    }
-    
-    function closeModal(id) { 
-        document.getElementById(id).style.display = 'none'; 
-    }
-
-    function closeAllModals() {
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    }
-
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; history.pushState(null, null, window.location.pathname); }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
     function goBackToCat() { closeModal('product-modal'); openModal('cat-modal'); }
 
-    // --- APP LOGIKA ---
     async function handleLogin() {
         const u = document.getElementById('login-user').value.trim();
         const p = document.getElementById('login-pass').value.trim();
@@ -166,7 +152,6 @@
         document.getElementById('user-info').innerText = currentUser.name;
         loadList();
         if(!syncInterval) syncInterval = setInterval(loadList, 3000);
-        // Kezdő állapot a history-ban
         history.pushState(null, null, window.location.pathname);
     }
 
@@ -189,8 +174,7 @@
         for (const cat in groups) {
             html += `<div class="category-header">${cat}</div>`;
             groups[cat].forEach(i => {
-                html += `
-                <div class="list-item ${i.checked ? 'checked' : ''}">
+                html += `<div class="list-item ${i.checked ? 'checked' : ''}">
                     <div class="checkbox ${i.checked ? 'active' : ''}" onclick="toggleCheck('${i.fbKey}', ${i.checked})"></div>
                     <div style="flex:1" onclick="toggleCheck('${i.fbKey}', ${i.checked})">
                         <div style="font-weight:700; font-size:14px;">${i.name}</div>
@@ -207,27 +191,18 @@
         selectedProto.cat = cat;
         document.getElementById('cat-title').innerText = cat;
         const g = document.getElementById('product-grid');
-        g.innerHTML = library[cat].map(p => `
-            <div class="item-card" onclick="handleItemClick('${p[1]}', '${p[0]}')">
-                <span>${p[0]}</span>${p[1]}
-            </div>`).join('');
-        closeModal('cat-modal');
-        openModal('product-modal');
+        g.innerHTML = library[cat].map(p => `<div class="item-card" onclick="handleItemClick('${p[1]}', '${p[0]}')"><span>${p[0]}</span>${p[1]}</div>`).join('');
+        closeModal('cat-modal'); openModal('product-modal');
     }
 
     function handleItemClick(name, icon) {
-        selectedProto.name = name;
-        selectedProto.icon = icon;
-        if (name === "Egyéb" || name === "EGYÉB...") {
-            document.getElementById('custom-name').value = "";
-            document.getElementById('custom-qty').value = "";
-            closeModal('product-modal');
-            openModal('custom-modal');
+        selectedProto.name = name; selectedProto.icon = icon;
+        if (name === "Egyéb") {
+            document.getElementById('custom-name').value = ""; document.getElementById('custom-qty').value = "";
+            closeModal('product-modal'); openModal('custom-modal');
         } else {
-            document.getElementById('selected-item-title').innerText = name;
-            document.getElementById('qty-input').value = "";
-            closeModal('product-modal');
-            openModal('qty-modal');
+            document.getElementById('selected-item-title').innerText = name; document.getElementById('qty-input').value = "";
+            closeModal('product-modal'); openModal('qty-modal');
         }
     }
 
@@ -240,7 +215,7 @@
     async function saveCustom(unit) {
         const name = document.getElementById('custom-name').value.trim();
         const qty = document.getElementById('custom-qty').value || 1;
-        if(!name) { alert("Adj meg egy nevet!"); return; }
+        if(!name) { alert("Név!"); return; }
         await pushToDb("✨ " + name, qty, unit, selectedProto.cat);
         closeModal('custom-modal');
     }
@@ -249,14 +224,11 @@
         const item = { name: fullName, qty, unit, cat, checked: false, timestamp: Date.now() };
         showLoading(true);
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}.json`, { method: 'POST', body: JSON.stringify(item) });
-        loadList();
-        showLoading(false);
+        loadList(); showLoading(false);
     }
 
     async function toggleCheck(key, status) {
-        await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { 
-            method: 'PATCH', body: JSON.stringify({ checked: !status }) 
-        });
+        await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'PATCH', body: JSON.stringify({ checked: !status }) });
         loadList();
     }
 
