@@ -103,3 +103,127 @@
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bevásárlólista v3</title>
+    <style>
+        :root { 
+            --bg: #000; 
+            --accent: #30d158; 
+            --text: #fff; 
+            --gray: #1c1c1c;
+            --purple: #a855f7; /* Lila szín a külön gombhoz */
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        h1 { 
+            font-size: 26px; 
+            margin-top: 50px; 
+            margin-bottom: 30px;
+            font-weight: 800;
+        }
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--accent); 
+            background: var(--gray); 
+            color: #fff; 
+            box-sizing: border-box; 
+            text-align: center; 
+            font-size: 16px;
+        }
+        .btn { 
+            width: 100%; 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1.5px solid var(--accent); 
+            background: transparent; 
+            color: var(--accent); 
+            font-weight: bold; 
+            font-size: 16px;
+            cursor: pointer; 
+            margin-bottom: 10px;
+        }
+        /* Lila gomb stílusa */
+        .btn-admin {
+            border-color: var(--purple);
+            color: var(--purple);
+            display: none; /* Alapból rejtve van */
+        }
+        #app { display: none; width: 100%; }
+        
+        .user-tag {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="login" class="container">
+    <h1>Bevásárlólista</h1>
+    <input type="text" id="user" placeholder="Felhasználónév">
+    <input type="password" id="pass" placeholder="Jelszó">
+    <button class="btn" onclick="login()">BELÉPÉS</button>
+</div>
+
+<div id="app" class="container">
+    <div id="u-label" class="user-tag"></div>
+    <h1>Bevásárlólista</h1>
+    
+    <div id="list-container">
+        <p style="color: #444; margin-top: 50px;">A lista még üres</p>
+    </div>
+
+    <button id="admin-btn" class="btn btn-admin" onclick="alert('Felhasználó hozzáadása funkció...')">
+        + FELHASZNÁLÓ HOZZÁADÁSA
+    </button>
+
+    <button class="btn" onclick="alert('Kategóriák fejlesztés alatt...')" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 360px;">
+        + ÚJ TÉTEL
+    </button>
+</div>
+
+<script>
+    function login() {
+        const u = document.getElementById('user').value.trim();
+        const te_neved = "Admin"; // IDE ÍRD A SAJÁT FELHASZNÁLÓNEVEDET!
+
+        if(u !== "") {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('u-label').innerText = u;
+
+            // Csak akkor mutatjuk a lila gombot, ha te lépsz be
+            if(u.toLowerCase() === te_neved.toLowerCase()) {
+                document.getElementById('admin-btn').style.display = 'block';
+            }
+        } else {
+            alert("Kérlek írj be egy nevet!");
+        }
+    }
+</script>
+</body>
+</html>
