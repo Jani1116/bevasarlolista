@@ -20,13 +20,26 @@
             border: 1px solid var(--accent); background: var(--gray); color: #fff; 
             box-sizing: border-box; text-align: center; font-size: 16px;
         }
-        .btn { 
-            width: 100%; padding: 15px; border-radius: 12px; border: 1.5px solid var(--accent); 
-            background: transparent; color: var(--accent); font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 10px;
-        }
-        .btn-admin { border-color: var(--purple); color: var(--purple); display: none; }
-        .logout-btn { color: var(--red); border: none; background: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 15px; width: 100%; }
         
+        /* Gombok alapstílusa */
+        .btn { 
+            width: 100%; border-radius: 12px; background: transparent; 
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+
+        /* NAGY GOMB: Új tétel */
+        .btn-main { 
+            padding: 18px; border: 2px solid var(--accent); color: var(--accent); 
+            font-size: 18px; margin-bottom: 15px;
+        }
+
+        /* KICSI GOMBOK: Felhasználó és Kijelentkezés */
+        .btn-small { 
+            padding: 10px; font-size: 13px; margin-bottom: 8px; border: 1.5px solid;
+        }
+        .btn-purple { border-color: var(--purple); color: var(--purple); display: none; }
+        .btn-red { border-color: var(--red); color: var(--red); }
+
         .modal {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
             z-index: 1000; align-items: center; justify-content: center;
@@ -38,7 +51,12 @@
 
         #app { display: none; width: 100%; }
         .user-tag { font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-top: 10px; }
-        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 400px; padding: 10px 20px 20px 20px; box-sizing: border-box; background: var(--bg); }
+        
+        .bottom-nav { 
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); 
+            width: 100%; max-width: 400px; padding: 10px 20px 20px 20px; 
+            box-sizing: border-box; background: var(--bg); 
+        }
     </style>
 </head>
 <body>
@@ -47,7 +65,7 @@
     <h1>Bevásárlólista</h1>
     <input type="text" id="user" placeholder="Felhasználónév">
     <input type="password" id="pass" placeholder="Jelszó">
-    <button class="btn" onclick="login()">BELÉPÉS</button>
+    <button class="btn btn-main" onclick="login()">BELÉPÉS</button>
 </div>
 
 <div id="app" class="container">
@@ -56,9 +74,11 @@
     <div id="list-container"><p style="color: #444; margin-top: 50px;">A lista még üres</p></div>
 
     <div class="bottom-nav">
-        <button id="admin-btn" class="btn btn-admin" onclick="openUserModal()">+ FELHASZNÁLÓ HOZZÁADÁSA</button>
-        <button class="btn" onclick="alert('Kategóriák...')">+ ÚJ TÉTEL</button>
-        <button class="logout-btn" onclick="logout()">KIJELENTKEZÉS</button>
+        <button class="btn btn-main" onclick="alert('Kategóriák...')">+ ÚJ TÉTEL</button>
+        
+        <button id="admin-btn" class="btn btn-small btn-purple" onclick="openUserModal()">+ FELHASZNÁLÓ HOZZÁADÁSA</button>
+        
+        <button class="btn btn-small btn-red" onclick="logout()">KIJELENTKEZÉS</button>
     </div>
 </div>
 
@@ -67,14 +87,14 @@
         <h2 style="color: var(--purple);">Új Felhasználó</h2>
         <input type="text" id="new-username" placeholder="Név" style="border-color: var(--purple);">
         <input type="password" id="new-password" placeholder="Jelszó" style="border-color: var(--purple);">
-        <button class="btn" style="border-color: var(--purple); color: var(--purple);" onclick="saveUser()">LÉTREHOZÁS</button>
-        <button class="logout-btn" onclick="closeUserModal()">MÉGSE</button>
+        <button class="btn btn-main" style="border-color: var(--purple); color: var(--purple);" onclick="saveUser()">LÉTREHOZÁS</button>
+        <button class="btn btn-small btn-red" style="border:none;" onclick="closeUserModal()">MÉGSE</button>
     </div>
 </div>
 
 <script>
     const DB_URL = "https://kiadaskoveto-2e474-default-rtdb.firebaseio.com/";
-    const ADMIN_USER = "Jani"; // A te felhasználóneved
+    const ADMIN_USER = "Jani"; 
 
     window.onload = function() {
         const savedUser = localStorage.getItem('loggedUser');
@@ -89,13 +109,10 @@
         try {
             const res = await fetch(`${DB_URL}shopping_users/${u}.json`);
             const storedPass = await res.json();
-            
             if (storedPass && String(storedPass).replace(/"/g, '') === p) {
                 localStorage.setItem('loggedUser', u);
                 showApp(u);
-            } else {
-                alert("Hibás név vagy jelszó!");
-            }
+            } else { alert("Hibás név vagy jelszó!"); }
         } catch (e) { alert("Hálózati hiba!"); }
     }
 
@@ -103,15 +120,11 @@
         const u = document.getElementById('new-username').value.trim();
         const p = document.getElementById('new-password').value.trim();
         if(!u || !p) return alert("Adj meg nevet és jelszót!");
-
         try {
-            await fetch(`${DB_URL}shopping_users/${u}.json`, {
-                method: 'PUT',
-                body: JSON.stringify(p)
-            });
-            alert("Felhasználó létrehozva: " + u);
+            await fetch(`${DB_URL}shopping_users/${u}.json`, { method: 'PUT', body: JSON.stringify(p) });
+            alert("Sikeresen létrehozva!");
             closeUserModal();
-        } catch (e) { alert("Sikertelen mentés!"); }
+        } catch (e) { alert("Hiba!"); }
     }
 
     function showApp(username) {
