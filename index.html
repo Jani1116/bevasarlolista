@@ -63,7 +63,7 @@
         <div class="item-card" onclick="showProducts('Gyümölcs')"><span>🍎</span>Gyümölcs</div>
         <div class="item-card" onclick="showProducts('Zöldség')"><span>🥦</span>Zöldség</div>
         <div class="item-card" onclick="showProducts('Tejtermék')"><span>🥛</span>Tejtermék</div>
-        <div class="item-card" onclick="showProducts('Húsok')"><span>🥩</span>Húsok</div>
+        <div class="item-card" onclick="showHusValaszto()"><span>🥩</span>Húsok</div>
         <div class="item-card" onclick="showProducts('Fagyasztott')"><span>❄️</span>Fagyasztott</div>
         <div class="item-card" onclick="showProducts('Háztartás')"><span>🧼</span>Háztartás</div>
         <div class="item-card" onclick="showProducts('Felvágott')"><span>🍱</span>Felvágott</div>
@@ -78,14 +78,10 @@
     <button class="main-btn" onclick="goBackToCat()" style="border:none; color:var(--gray)">Vissza</button>
 </div></div>
 
-<div id="comb-type-modal" class="modal"><div class="modal-content">
-    <h2 style="text-align:center;">Csirkecomb típusa</h2>
-    <div class="grid">
-        <button class="main-btn" onclick="selectComb('Alsó')">Alsó</button>
-        <button class="main-btn" onclick="selectComb('Felső')">Felső</button>
-        <button class="main-btn" onclick="selectComb('Egész')">Egész</button>
-    </div>
-    <button class="main-btn" onclick="closeModal('comb-type-modal')" style="border:none; color:var(--gray)">Mégse</button>
+<div id="sub-type-modal" class="modal"><div class="modal-content">
+    <h2 id="sub-type-title" style="text-align:center;"></h2>
+    <div id="sub-type-grid" class="grid"></div>
+    <button class="main-btn" onclick="closeModal('sub-type-modal')" style="border:none; color:var(--gray)">Mégse</button>
 </div></div>
 
 <div id="qty-modal" class="modal"><div class="modal-content">
@@ -120,14 +116,14 @@
         'Gyümölcs': [['🍎','Alma'],['🍌','Banán'],['🍊','Mandarin'],['🍐','Körte'],['🍑','Barack'],['🍋','Citrom'],['🍇','Szőlő'],['🍊','Narancs'],['🍉','Dinnye'],['✨','Egyéb']],
         'Zöldség': [['🥬','Káposzta'],['🌿','Zeller'],['🥦','Karfiol'],['🍅','Paradicsom'],['🌶️','Paprika'],['🥔','Krumpli'],['🧅','Hagyma'],['🥬','Karalábé'],['🥒','Uborka'],['🧄','Fokhagyma'],['🎃','Sütőtök'],['🍄','Gomba'],['✨','Egyéb']],
         'Tejtermék': [['🥛','Tej'],['🧀','Sajt'],['🍚','Túró'],['🍶','Tejföl'],['🍦','Joghurt'],['🥤','Kefír'],['🥚','Tojás'],['✨','Egyéb']],
-        'Húsok': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Darált'],['🍗','Comb'],['🐖','Oldalas'],['🐖','H. Karaj'],['🐖','R. Karaj'],['🍗','Mell'],['🍗','Farhát'],['🍗','Szárny'],['✨','Egyéb']],
+        'Sertés': [['🐖','Tarja'],['🐖','Lapocka'],['🐖','Karaj'],['🐖','Oldalas'],['✨','Egyéb']],
+        'Csirke': [['🍗','Comb'],['🍗','Mell'],['🍗','Farhát'],['🍗','Szárny'],['✨','Egyéb']],
         'Fagyasztott': [['🫛','Zöldborsó'],['🥦','Zöldbab'],['🥕','Vegyes zöldség'],['🍟','Nuggets'],['🧀','Sajttal töltött'],['🥩','Máj'],['🍦','Jégkrém'],['❄️','Egyéb']],
         'Háztartás': [['🧼','Mosogatószer'],['🧺','Mosószer'],['🧽','Szivacs'],['✨','Egyéb']],
         'Felvágott': [['🌭','Virsli'],['🍖','Sonka'],['🥓','Bacon'],['🍱','Párizsi/Rúd'],['✨','Egyéb']],
         'Egyéb': [['🍞','Kenyér'],['☕','Kávé'],['🧻','Papír'],['✨','Egyéb']]
     };
 
-    // --- VISSZA GOMB KEZELÉSE ---
     window.addEventListener('popstate', function(event) {
         const openModals = document.querySelectorAll('.modal[style*="display: flex"]');
         if (openModals.length > 0) {
@@ -136,11 +132,7 @@
         }
     });
 
-    function openModal(id) { 
-        document.getElementById(id).style.display = 'flex'; 
-        history.pushState(null, null, window.location.pathname); 
-    }
-    
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; history.pushState(null, null, window.location.pathname); }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
     function goBackToCat() { closeModal('product-modal'); openModal('cat-modal'); }
@@ -190,7 +182,6 @@
         }
         loadList();
         if(!syncInterval) syncInterval = setInterval(loadList, 3000);
-        // Kezdő állapot a vissza gombhoz
         history.replaceState(null, null, window.location.pathname);
     }
 
@@ -226,8 +217,21 @@
         c.innerHTML = html;
     }
 
+    function showHusValaszto() {
+        selectedProto.cat = 'Húsok';
+        document.getElementById('cat-title').innerText = 'Húsok';
+        const g = document.getElementById('product-grid');
+        g.innerHTML = `
+            <div class="item-card" onclick="showProducts('Sertés')"><span>🐖</span>Sertés</div>
+            <div class="item-card" onclick="showProducts('Csirke')"><span>🍗</span>Csirke</div>
+            <div class="item-card" onclick="handleItemClick('Darált hús', '🥩')"><span>🥩</span>Darált hús</div>
+            <div class="item-card" onclick="handleItemClick('Egyéb', '✨')"><span>✨</span>Egyéb</div>
+        `;
+        closeModal('cat-modal'); openModal('product-modal');
+    }
+
     function showProducts(cat) {
-        selectedProto.cat = cat;
+        selectedProto.cat = (cat === 'Sertés' || cat === 'Csirke') ? 'Húsok' : cat;
         document.getElementById('cat-title').innerText = cat;
         const g = document.getElementById('product-grid');
         g.innerHTML = library[cat].map(p => `<div class="item-card" onclick="handleItemClick('${p[1]}', '${p[0]}')"><span>${p[0]}</span>${p[1]}</div>`).join('');
@@ -240,16 +244,27 @@
             document.getElementById('custom-name').value = ""; document.getElementById('custom-qty').value = "";
             closeModal('product-modal'); openModal('custom-modal');
         } else if (name === "Comb") {
-            closeModal('product-modal'); openModal('comb-type-modal');
+            closeModal('product-modal');
+            showSubType('Csirkecomb', ['Alsó', 'Felső', 'Egész']);
+        } else if (name === "Karaj") {
+            closeModal('product-modal');
+            showSubType('Karaj', ['Rövidkaraj', 'Hosszúkaraj']);
         } else {
             document.getElementById('selected-item-title').innerText = name; document.getElementById('qty-input').value = "";
             closeModal('product-modal'); openModal('qty-modal');
         }
     }
 
-    function selectComb(type) {
-        selectedProto.name = type + " Comb";
-        closeModal('comb-type-modal');
+    function showSubType(title, types) {
+        document.getElementById('sub-type-title').innerText = title;
+        const g = document.getElementById('sub-type-grid');
+        g.innerHTML = types.map(t => `<button class="main-btn" onclick="selectSubType('${t}')">${t}</button>`).join('');
+        openModal('sub-type-modal');
+    }
+
+    function selectSubType(type) {
+        selectedProto.name = type;
+        closeModal('sub-type-modal');
         document.getElementById('selected-item-title').innerText = selectedProto.name;
         document.getElementById('qty-input').value = "";
         openModal('qty-modal');
