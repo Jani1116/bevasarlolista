@@ -84,6 +84,23 @@
     <button class="main-btn" onclick="closeModal('sub-type-modal')" style="border:none; color:var(--gray)">Mégse</button>
 </div></div>
 
+<div id="felvagott-modal" class="modal"><div class="modal-content">
+    <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
+        <button class="main-btn" style="font-size: 11px; padding: 10px;" onclick="setFelvagottType('Párizsi')">Párizsi</button>
+        <button class="main-btn" style="font-size: 11px; padding: 10px;" onclick="setFelvagottType('Zala')">Zala</button>
+        <button class="main-btn" style="font-size: 11px; padding: 10px;" onclick="setFelvagottType('Szalámi')">Szalámi</button>
+        <button class="main-btn" style="font-size: 11px; padding: 10px;" onclick="setFelvagottType('Sonka')">Sonka</button>
+        <button class="main-btn" style="font-size: 11px; padding: 10px;" onclick="setFelvagottType('Májkrém')">Májkrém</button>
+    </div>
+    <input type="text" id="felvagott-custom-name" placeholder="Megnevezés">
+    <input type="number" id="felvagott-qty" placeholder="Mennyiség" inputmode="decimal">
+    <div class="grid">
+        <button class="main-btn" onclick="saveFelvagott('db')">db</button>
+        <button class="main-btn" onclick="saveFelvagott('kg')" style="border-color:var(--purple); color:var(--purple)">kg</button>
+    </div>
+    <button class="main-btn" onclick="closeModal('felvagott-modal')" style="border:none; color:var(--gray)">Mégse (vissza)</button>
+</div></div>
+
 <div id="qty-modal" class="modal"><div class="modal-content">
     <h2 id="selected-item-title" style="text-align:center;"></h2>
     <input type="number" id="qty-input" placeholder="Mennyiség" inputmode="decimal">
@@ -260,6 +277,11 @@
         } else if (name === "Karaj") {
             closeModal('product-modal');
             showSubType('Karaj', ['Rövidkaraj', 'Hosszúkaraj']);
+        } else if (name === "Felvágott") {
+            document.getElementById('felvagott-custom-name').value = "";
+            document.getElementById('felvagott-qty').value = "";
+            closeModal('product-modal');
+            openModal('felvagott-modal');
         } else {
             document.getElementById('selected-item-title').innerText = name; document.getElementById('qty-input').value = "";
             closeModal('product-modal'); openModal('qty-modal');
@@ -279,6 +301,18 @@
         document.getElementById('selected-item-title').innerText = selectedProto.name;
         document.getElementById('qty-input').value = "";
         openModal('qty-modal');
+    }
+
+    function setFelvagottType(type) {
+        document.getElementById('felvagott-custom-name').value = type;
+    }
+
+    async function saveFelvagott(unit) {
+        const name = document.getElementById('felvagott-custom-name').value.trim();
+        const qty = document.getElementById('felvagott-qty').value || 1;
+        if(!name) return;
+        await pushToDb("🍖 " + name, qty, unit, "Felvágott");
+        closeAllModals();
     }
 
     async function saveFinal(unit) {
