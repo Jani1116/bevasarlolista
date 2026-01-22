@@ -6,83 +6,40 @@
     <title>Bevásárlólista</title>
     <style>
         :root { 
-            --bg: #000; 
-            --accent: #30d158; 
-            --text: #fff; 
-            --gray: #1c1c1c;
-            --purple: #a855f7;
-            --red: #ff453a;
+            --bg: #000; --accent: #30d158; --text: #fff; --gray: #1c1c1c;
+            --purple: #a855f7; --red: #ff453a;
         }
         body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
+            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
-        .container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: center;
-        }
-        h1 { 
-            font-size: 26px; 
-            margin-top: 50px; 
-            margin-bottom: 30px;
-            font-weight: 800;
-        }
+        .container { width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; text-align: center; }
+        h1 { font-size: 26px; margin-top: 50px; margin-bottom: 30px; font-weight: 800; }
         input { 
-            width: 100%; 
-            padding: 15px; 
-            margin-bottom: 15px; 
-            border-radius: 12px; 
-            border: 1px solid var(--accent); 
-            background: var(--gray); 
-            color: #fff; 
-            box-sizing: border-box; 
-            text-align: center; 
-            font-size: 16px;
+            width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; 
+            border: 1px solid var(--accent); background: var(--gray); color: #fff; 
+            box-sizing: border-box; text-align: center; font-size: 16px;
         }
         .btn { 
-            width: 100%; 
-            padding: 15px; 
-            border-radius: 12px; 
-            border: 1.5px solid var(--accent); 
-            background: transparent; 
-            color: var(--accent); 
-            font-weight: bold; 
-            font-size: 16px;
-            cursor: pointer; 
-            margin-bottom: 10px;
+            width: 100%; padding: 15px; border-radius: 12px; border: 1.5px solid var(--accent); 
+            background: transparent; color: var(--accent); font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 10px;
         }
-        .btn-admin {
-            border-color: var(--purple);
-            color: var(--purple);
-            display: none;
-        }
-        .logout-btn {
-            color: var(--red);
-            border: none;
-            background: none;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 20px;
-            padding: 10px;
-        }
-        #app { display: none; width: 100%; }
+        .btn-admin { border-color: var(--purple); color: var(--purple); display: none; }
+        .logout-btn { color: var(--red); border: none; background: none; font-weight: bold; font-size: 14px; cursor: pointer; padding: 15px; width: 100%; }
         
-        .user-tag {
-            font-size: 10px;
-            letter-spacing: 2px;
-            color: var(--accent);
-            text-transform: uppercase;
-            margin-top: 10px;
+        /* Modal stílus a felhasználó hozzáadáshoz */
+        .modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 1000; align-items: center; justify-content: center;
         }
+        .modal-content {
+            background: #111; padding: 30px; border-radius: 20px; width: 85%;
+            border: 1px solid var(--purple); text-align: center;
+        }
+
+        #app { display: none; width: 100%; }
+        .user-tag { font-size: 10px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-top: 10px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 400px; padding: 10px 20px 20px 20px; box-sizing: border-box; background: var(--bg); }
     </style>
 </head>
 <body>
@@ -97,59 +54,81 @@
 <div id="app" class="container">
     <div id="u-label" class="user-tag"></div>
     <h1>Bevásárlólista</h1>
-    
-    <div id="list-container">
-        <p style="color: #444; margin-top: 50px;">A lista még üres</p>
+    <div id="list-container"><p style="color: #444; margin-top: 50px;">A lista még üres</p></div>
+
+    <div class="bottom-nav">
+        <button id="admin-btn" class="btn btn-admin" onclick="openUserModal()">+ FELHASZNÁLÓ HOZZÁADÁSA</button>
+        <button class="btn" onclick="alert('Kategóriák...')">+ ÚJ TÉTEL</button>
+        <button class="logout-btn" onclick="logout()">KIJELENTKEZÉS</button>
     </div>
+</div>
 
-    <button id="admin-btn" class="btn btn-admin" onclick="alert('Felhasználó hozzáadása...')">
-        + FELHASZNÁLÓ HOZZÁADÁSA
-    </button>
-
-    <button class="btn" onclick="alert('Kategóriák fejlesztés alatt...')" style="margin-top: 20px;">
-        + ÚJ TÉTEL
-    </button>
-
-    <button class="logout-btn" onclick="logout()">KIJELENTKEZÉS</button>
+<div id="user-modal" class="modal">
+    <div class="modal-content">
+        <h2 style="color: var(--purple);">Új Felhasználó</h2>
+        <input type="text" id="new-username" placeholder="Név" style="border-color: var(--purple);">
+        <input type="password" id="new-password" placeholder="Jelszó" style="border-color: var(--purple);">
+        <button class="btn" style="border-color: var(--purple); color: var(--purple);" onclick="saveUser()">LÉTREHOZÁS</button>
+        <button class="logout-btn" onclick="closeUserModal()">MÉGSE</button>
+    </div>
 </div>
 
 <script>
-    const MY_NAME = "Admin"; // Ezt írd át a saját nevedre
+    const DB_URL = "https://kiadaskoveto-2e474-default-rtdb.firebaseio.com/";
+    const MY_NAME = "Admin"; 
 
-    // Ellenőrizzük belépéskor, hogy van-e mentett munkamenet
     window.onload = function() {
         const savedUser = localStorage.getItem('loggedUser');
-        if (savedUser) {
-            showApp(savedUser);
-        }
+        if (savedUser) { showApp(savedUser); }
     };
 
-    function login() {
+    // Belépés ellenőrzése az adatbázisból
+    async function login() {
         const u = document.getElementById('user').value.trim();
-        if(u !== "") {
-            localStorage.setItem('loggedUser', u);
-            showApp(u);
-        } else {
-            alert("Kérlek írj be egy nevet!");
-        }
+        const p = document.getElementById('pass').value.trim();
+        if(!u || !p) return alert("Töltsd ki mindkét mezőt!");
+
+        try {
+            const res = await fetch(`${DB_URL}shopping_users/${u}.json`);
+            const storedPass = await res.json();
+            
+            if (storedPass && String(storedPass).replace(/"/g, '') === p) {
+                localStorage.setItem('loggedUser', u);
+                showApp(u);
+            } else {
+                alert("Hibás név vagy jelszó!");
+            }
+        } catch (e) { alert("Hálózati hiba!"); }
+    }
+
+    // Új felhasználó mentése az adatbázisba (Lila gomb funkciója)
+    async function saveUser() {
+        const u = document.getElementById('new-username').value.trim();
+        const p = document.getElementById('new-password').value.trim();
+        if(!u || !p) return alert("Adj meg nevet és jelszót!");
+
+        try {
+            await fetch(`${DB_URL}shopping_users/${u}.json`, {
+                method: 'PUT',
+                body: JSON.stringify(p)
+            });
+            alert("Felhasználó létrehozva: " + u);
+            closeUserModal();
+        } catch (e) { alert("Nem sikerült menteni!"); }
     }
 
     function showApp(username) {
         document.getElementById('login').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         document.getElementById('u-label').innerText = username;
-
         if(username.toLowerCase() === MY_NAME.toLowerCase()) {
             document.getElementById('admin-btn').style.display = 'block';
-        } else {
-            document.getElementById('admin-btn').style.display = 'none';
         }
     }
 
-    function logout() {
-        localStorage.removeItem('loggedUser');
-        location.reload(); // Frissíti az oldalt és visszadob a loginra
-    }
+    function openUserModal() { document.getElementById('user-modal').style.display = 'flex'; }
+    function closeUserModal() { document.getElementById('user-modal').style.display = 'none'; }
+    function logout() { localStorage.removeItem('loggedUser'); location.reload(); }
 </script>
 </body>
 </html>
