@@ -94,7 +94,7 @@
         <button class="main-btn" style="font-size: 11px; padding: 10px;" onclick="setFelvagottType('Olasz')">Olasz</button>
     </div>
     <input type="text" id="felvagott-custom-name" placeholder="Megnevezés">
-    <input type="number" id="felvagott-qty" placeholder="Mennyiség" inputmode="decimal">
+    <input type="number" id="felvagott-qty" placeholder="Mennyiség" inputmode="decimal" step="any">
     <div class="grid">
         <button class="main-btn" onclick="saveFelvagott('db')">db</button>
         <button class="main-btn" onclick="saveFelvagott('kg')" style="border-color:var(--purple); color:var(--purple)">kg</button>
@@ -104,7 +104,7 @@
 
 <div id="qty-modal" class="modal"><div class="modal-content">
     <h2 id="selected-item-title" style="text-align:center;"></h2>
-    <input type="number" id="qty-input" placeholder="Mennyiség" inputmode="decimal">
+    <input type="number" id="qty-input" placeholder="Mennyiség" inputmode="decimal" step="any">
     <div class="grid">
         <button class="main-btn" onclick="saveFinal('db')">db</button>
         <button class="main-btn" onclick="saveFinal('kg')" style="border-color:var(--purple); color:var(--purple)">kg</button>
@@ -115,7 +115,7 @@
 <div id="custom-modal" class="modal"><div class="modal-content">
     <h2 style="text-align:center;">Egyéb</h2>
     <input type="text" id="custom-name" placeholder="Megnevezés">
-    <input type="number" id="custom-qty" placeholder="Mennyiség" inputmode="decimal">
+    <input type="number" id="custom-qty" placeholder="Mennyiség" inputmode="decimal" step="any">
     <div class="grid">
         <button class="main-btn" onclick="saveCustom('db')">db</button>
         <button class="main-btn" onclick="saveCustom('kg')" style="border-color:var(--purple); color:var(--purple)">kg</button>
@@ -312,12 +312,14 @@
         const name = document.getElementById('felvagott-custom-name').value.trim();
         const qty = document.getElementById('felvagott-qty').value || 1;
         if(!name) return;
+        if (navigator.vibrate) navigator.vibrate(10);
         await pushToDb("🍖 " + name, qty, unit, "Felvágott");
         closeAllModals();
     }
 
     async function saveFinal(unit) {
         const qty = document.getElementById('qty-input').value || 1;
+        if (navigator.vibrate) navigator.vibrate(10);
         await pushToDb(selectedProto.icon + " " + selectedProto.name, qty, unit, selectedProto.cat);
         closeAllModals();
     }
@@ -326,6 +328,7 @@
         const name = document.getElementById('custom-name').value.trim();
         const qty = document.getElementById('custom-qty').value || 1;
         if(!name) return;
+        if (navigator.vibrate) navigator.vibrate(10);
         await pushToDb("✨ " + name, qty, unit, selectedProto.cat);
         closeAllModals();
     }
@@ -338,6 +341,7 @@
     }
 
     async function toggleCheck(key, status) {
+        if (navigator.vibrate) navigator.vibrate(10);
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { 
             method: 'PATCH', 
             body: JSON.stringify({ checked: !status, timestamp: Date.now() }) 
@@ -346,7 +350,10 @@
     }
 
     async function deleteItem(key, silent = false) {
-        if (!silent) showLoading(true);
+        if (!silent) {
+            showLoading(true);
+            if (navigator.vibrate) navigator.vibrate(10);
+        }
         await fetch(`${DB_URL}shopping_v2_list/${currentUser.name}/${key}.json`, { method: 'DELETE' });
         if (!silent) { loadList(); showLoading(false); }
     }
